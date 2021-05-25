@@ -1,6 +1,6 @@
 
 ###################### IMPORTING LIBRARIES ######################
-
+import tensorflow
 import tensorflow as tf                 # deep learning
 import numpy as np                      # multi-dimensional array
 import matplotlib.pyplot as plt         # plot
@@ -8,12 +8,14 @@ import matplotlib.image as pltimg       # alternative image processing
 from PIL import Image                   # image processing
 import os                               # operating system io
 
+# set the seed for reproducibility
+tf.random.set_seed(1234)
+
 ###################### LIST ALL FILES IN THE DIRECTORY ######################
 
 data_dir = "/Users/davidecolombo/Desktop/dataset/chest_xray_keras/"
 class_names  = os.listdir(data_dir)
 class_names = [c for c in class_names if not c.startswith('.')]     # remove the hidden folders
-class_names
 
 # create the complete path to the folder
 path2folder = [data_dir + dir for dir in class_names]
@@ -47,6 +49,12 @@ plt.imshow(virus_images[0])
 
 ###################### DEFINE DATA GENERATOR ######################
 
+# Create a data generator for VGG16 architecture
+vgg16_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
+    preprocessing_function= tf.keras.applications.vgg16.preprocess_input,
+    validation_split= 0.3
+)
+
 # Create an image data generator
 datagen = tf.keras.preprocessing.image.ImageDataGenerator(
     rescale= 1./255,
@@ -76,6 +84,115 @@ validation_generator = datagen.flow_from_directory(
     seed = 1234,
     subset= 'validation'
 )
+
+###################### DEFINE TRAINING SET FOR VGG16 TRAIN ######################
+
+# define vgg16 network image size
+vgg16_imgsize = 224
+
+vgg16_train = vgg16_datagen.flow_from_directory(
+    directory= data_dir,
+    target_size= (vgg16_imgsize, vgg16_imgsize),
+    class_mode= 'categorical',
+    batch_size= 64,
+    shuffle= True,
+    seed= 1234,
+    subset= 'training'
+)
+
+vgg16_validation = vgg16_datagen.flow_from_directory(
+    directory= data_dir,
+    target_size= (vgg16_imgsize, vgg16_imgsize),
+    class_mode= 'categorical',
+    batch_size= 64,
+    shuffle= True,
+    seed= 1234,
+    subset= 'validation'
+)
+
+###################### DEFINE MODEL METRICS ######################
+
+metrics = [
+    tf.keras.metrics.CategoricalAccuracy(name = 'accuracy'),
+    tf.keras.metrics.Precision(),
+    tf.keras.metrics.Recall(),
+    tf.keras.metrics.AUC(name='auc'),
+    tf.keras.metrics.AUC(name='prc', curve='PR')
+]
+
+###################### DEFINE CALLBACKS ######################
+
+early_stopping = tf.keras.callbacks.EarlyStopping(
+    monitor='val_prc',
+    verbose=1,
+    patience=10,
+    mode='max',
+    restore_best_weights=True
+)
+
+save_best = tf.keras.callbacks.ModelCheckpoint(
+    filepath= os.getcwd() + '/checkpoint/',
+    monitor= 'val_prc',
+    mode='max',
+    verbose=1,
+    save_best_only= True
+)
+
+###################### DEFINE THE VGG MODEL ######################
+
+def make_vgg16(metrics, img_size, channels):
+    conv_base = tf.keras.applications.VGG16(
+        include_top=False,
+        weights='imagenet',
+        pooling='None',
+        input_shape= (img_size, img_size, channels)
+    )
+
+    # freeze the layers
+    for layer in conv_base.layers:
+        layer.trainable = False
+
+    # define the model
+    top_model = conv_base.output
+    top_model = tf.keras.layers.Flatten()(top_model)
+    top_model = tf.keras.layers.Dense(units = 256, activation='relu')(top_model)
+    top_model = tf.keras.layers.Dropout(rate=0.5)(top_model)
+    top_model = tf.keras.layers.Dense(units = 128, activation='relu')(top_model)
+    top_model = tf.keras.layers.Dropout(rate=0.5)(top_model)
+    top_model = tf.keras.layers.Dense(units = 64, activation='relu')(top_model)
+    top_model = tf.keras.layers.Dropout(rate=0.5)(top_model)
+    output_layer = tf.keras.layers.Dense(units=3, activation='softmax')(top_model)
+
+    # final model
+    model = tf.keras.Model(inputs = conv_base.input, outputs = output_layer)
+
+    # summary
+    model.summary()
+
+    # compile the model
+    model.compile(
+        optimizer = tf.keras.optimizers.Adam(),
+        loss      = tf.keras.losses.CategoricalCrossentropy(),
+        metrics   = metrics
+    )
+
+    return model
+
+###################### USE VGG16 FOR FEATURE EXTRACTION ######################
+
+# must have 3 channels
+vgg16_model = make_vgg16(metrics = metrics, img_size=vgg16_imgsize, channels=3)
+
+vgg16_history = vgg16_model.fit_generator(
+    vgg16_train,
+    validation_data= vgg16_validation,
+    epochs= 50,
+    steps_per_epoch= 4101 // 64,
+    validation_steps= 1755 // 64,
+    verbose= 1,
+    callbacks= [early_stopping, save_best]
+)
+
 
 ###################### DEFINE A FUNCTION FOR CREATING KERAS MODEL ######################
 
@@ -109,33 +226,10 @@ def make_model(metrics):
 
     return model
 
-###################### DEFINE MODEL METRICS ######################
-
-metrics = [
-    tf.keras.metrics.Precision(),
-    tf.keras.metrics.Recall(),
-    tf.keras.metrics.AUC(name='auc'),
-    tf.keras.metrics.AUC(name='prc', curve='PR')
-]
-
 ###################### DEFINE MODEL PARAMETERS ######################
 
 batch_size = 64
-epochs     = 100
-
-###################### DEFINE CALLBACKS ######################
-
-early_stopping = tf.keras.callbacks.EarlyStopping(
-    monitor='val_prc',
-    verbose=1,
-    patience=10,
-    mode='max',
-    restore_best_weights=True
-)
-
-save_best = tf.keras.callbacks.ModelCheckpoint(
-
-)
+epochs     = 50
 
 ###################### TRAIN THE MODEL ######################
 
@@ -150,7 +244,6 @@ history = model.fit_generator(
     callbacks= [early_stopping],
     verbose=1
 )
-
 
 
 
