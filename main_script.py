@@ -155,11 +155,11 @@ def make_vgg16(metrics, img_size, channels):
     # define the model
     top_model = conv_base.output
     top_model = tf.keras.layers.Flatten()(top_model)
-    top_model = tf.keras.layers.Dense(units = 256, activation='relu')(top_model)
-    top_model = tf.keras.layers.Dropout(rate=0.5)(top_model)
     top_model = tf.keras.layers.Dense(units = 128, activation='relu')(top_model)
-    top_model = tf.keras.layers.Dropout(rate=0.5)(top_model)
-    top_model = tf.keras.layers.Dense(units = 64, activation='relu')(top_model)
+    # top_model = tf.keras.layers.Dropout(rate=0.5)(top_model)
+    # top_model = tf.keras.layers.Dense(units = 128, activation='relu')(top_model)
+    # top_model = tf.keras.layers.Dropout(rate=0.5)(top_model)
+    # top_model = tf.keras.layers.Dense(units = 64, activation='relu')(top_model)
     top_model = tf.keras.layers.Dropout(rate=0.5)(top_model)
     output_layer = tf.keras.layers.Dense(units=3, activation='softmax')(top_model)
 
