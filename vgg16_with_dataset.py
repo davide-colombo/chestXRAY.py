@@ -29,7 +29,7 @@ train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     seed = 333
 )
 
-###################### VALIDATON DATASET ######################
+###################### VALIDATION DATASET ######################
 
 val_ds = tf.keras.preprocessing.image_dataset_from_directory(
     data_dir,
@@ -41,10 +41,19 @@ val_ds = tf.keras.preprocessing.image_dataset_from_directory(
     seed = 333
 )
 
+###################### INSPECTING THE TRAINING DATASET ######################
+
+# we have a tuple (image, label)
+print(train_ds.element_spec)
+print(train_ds)
+
+for image, label in train_ds.take(1):
+    for i in range(1):
+        print(image[i])
+
 ###################### CLASS NAMES ######################
 
 class_names = train_ds.class_names
-
 
 ###################### PLOT IMAGES IN THE FIRST BATCH ######################
 
@@ -55,6 +64,46 @@ for images, labels in train_ds.take(1):
         plt.imshow(images[i].numpy().astype('uint8'))
         plt.title(class_names[labels[i]])
         plt.axis('off')
+
+###################### INSPECT TRAIN BATCHES ######################
+
+for image_batch, labels_batch in train_ds:
+    print(image_batch.shape)
+    print(labels_batch.shape)
+    break
+
+###################### STANDARDIZE THE DATA ######################
+
+normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1./255)
+
+normalized_train = train_ds.map(lambda x, y: (normalization_layer(x), y))
+image_batch, labels_batch = next(iter(normalized_train))
+first_image = image_batch[0]
+print(np.min(first_image), np.max(first_image))
+
+normalized_val = val_ds.map(lambda x, y: (normalization_layer(x), y))
+image_batch, labels_batch = next(iter(normalized_val))
+first_image = image_batch[0]
+print(np.min(first_image), np.max(first_image))
+
+###################### CONVERT THE LABELS INTO CATEGORICAL ######################
+
+# USE 'tf.one_hot' and NOT 'tf.keras.utils.to_categorical'
+
+categorical_train = normalized_train.map(lambda x, y: (x, tf.one_hot(y, len(class_names))))
+image_batch, label_batch = next(iter(categorical_train))
+print(label_batch.shape)
+
+categorical_val = normalized_val.map(lambda x, y: (x, tf.one_hot(y, len(class_names))))
+image_batch, label_batch = next(iter(categorical_val))
+print(label_batch.shape)
+
+###################### CONFIGURE THE DATASET FOR PERFORMANCE ######################
+
+AUTOTUNE = tf.data.AUTOTUNE
+
+normalized_train = normalized_train.cache().prefetch(buffer_size = AUTOTUNE)
+normalized_val   = normalized_val.cache().prefetch(buffer_size = AUTOTUNE)
 
 ###################### DEFINE MODEL METRICS ######################
 
