@@ -88,9 +88,7 @@ custom_metrics = [
     my_custom_metric.categorical_f1_score,
     my_custom_metric.categorical_precision,
     my_custom_metric.categorical_recall,
-    my_custom_metric.categorical_true_positives,
-    my_custom_metric.categorical_false_positives,
-    my_custom_metric.categorical_false_negatives
+    my_custom_metric.categorical_true_positives
 ]
 
 ###################### DEFINE CALLBACKS ######################
