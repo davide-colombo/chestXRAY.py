@@ -48,7 +48,7 @@ class MyCustomMetrics:
         actual   = tf.cast(tf.reduce_sum(cm, axis = 1), tf.float32)
         weight   = tf.cast(tf.divide(actual, tf.multiply(tf.ones_like(actual), tf.reduce_sum(actual))), tf.float32)
         correct  = tf.cast(tf.linalg.diag_part(cm), tf.float32)
-        accuracy = tf.divide(correct, actual)
+        accuracy = tf.divide(correct, tf.add(actual, 1e-7))
         return tf.reduce_sum(tf.multiply(accuracy, weight))
 
     # @Source: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html
@@ -56,7 +56,7 @@ class MyCustomMetrics:
         cm       = self.__categorical_confusion_mat(y_true, y_pred)
         actual   = tf.cast(tf.reduce_sum(cm, axis = 1), tf.float32)
         correct  = tf.cast(tf.linalg.diag_part(cm), tf.float32)
-        accuracy = tf.divide(correct, actual)
+        accuracy = tf.divide(correct, tf.add(actual, 1e-7))
         return tf.reduce_mean(accuracy)
 
 
