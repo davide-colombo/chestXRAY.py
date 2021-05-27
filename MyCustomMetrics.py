@@ -36,12 +36,60 @@ class MyCustomMetrics:
         false_neg = self.categorical_false_negatives(y_true, y_pred)
         return true_pos / (true_pos + false_neg)
 
+    # @Source: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
     def categorical_f1_score(self, y_true, y_pred):
         precision = self.categorical_precision(y_true, y_pred)
         recall    = self.categorical_recall(y_true, y_pred)
         return 2 * (precision * recall) / (precision + recall)
 
+    # @Source: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html#sklearn.metrics.accuracy_score
+    def categorical_weighted_accuracy(self, y_true, y_pred):
+        cm       = self.__categorical_confusion_mat(y_true, y_pred)
+        actual   = tf.cast(tf.reduce_sum(cm, axis = 1), tf.float32)
+        weight   = tf.cast(tf.divide(actual, tf.multiply(tf.ones_like(actual), tf.reduce_sum(actual))), tf.float32)
+        correct  = tf.cast(tf.linalg.diag_part(cm), tf.float32)
+        accuracy = tf.divide(correct, actual)
+        return tf.reduce_sum(tf.multiply(accuracy, weight))
 
-# CHECK
-# categorical_f1_score(y_true = [[0, 1, 0], [0, 1, 0], [0, 0, 1]],
-#                      y_pred = [[0.1, 0.8, 0.1], [0.2, 0.7, 0.1], [0.4, 0.3, 0.3]])
+    # @Source: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html
+    def categorical_balanced_accuracy(self, y_true, y_pred):
+        cm       = self.__categorical_confusion_mat(y_true, y_pred)
+        actual   = tf.cast(tf.reduce_sum(cm, axis = 1), tf.float32)
+        correct  = tf.cast(tf.linalg.diag_part(cm), tf.float32)
+        accuracy = tf.divide(correct, actual)
+        return tf.reduce_mean(accuracy)
+
+
+# THIS IS A TEST
+
+# from sklearn.metrics import f1_score
+# from sklearn.metrics import balanced_accuracy_score
+# from sklearn.metrics import accuracy_score
+#
+# my_custom_metrics = MyCustomMetrics()
+#
+# # CHECK
+# my_custom_metrics.categorical_recall(y_true = [[0, 1, 0],       [0, 1, 0],       [0, 0, 1],       [1, 0, 0], [0, 0, 1]],
+#                                                 y_pred = [[0.1, 0.8, 0.1], [0.2, 0.7, 0.1], [0.4, 0.3, 0.3], [0, 1, 0], [0, 0, 1]])
+
+# f1_score(y_true = [1, 1, 2, 0, 2],
+#          y_pred = [1, 1, 0, 1, 2],
+#          average = 'micro')
+
+# balanced_accuracy_score(y_true = [1, 1, 2, 0, 2],
+#                         y_pred = [1, 1, 0, 1, 2])
+#
+# accuracy_score(y_true = [1, 1, 2, 0, 2],
+#                y_pred = [1, 1, 0, 1, 2],
+#                normalize=True)
+
+# from sklearn.metrics import precision_score
+# from sklearn.metrics import recall_score
+#
+# precision_score(y_true = [1, 1, 2, 0, 2],
+#                 y_pred = [1, 1, 0, 1, 2],
+#                 average = 'micro')
+#
+# recall_score(y_true = [1, 1, 2, 0, 2],
+#              y_pred = [1, 1, 0, 1, 2],
+#              average = 'micro')
