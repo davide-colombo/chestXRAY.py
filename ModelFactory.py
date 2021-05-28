@@ -86,30 +86,29 @@ class ModelFactory:
     def make_model(metrics):
         # define the model
         model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(filters=64, kernel_size=(7, 7), strides=3, padding="same", activation='relu',
-                                   input_shape=(256, 256, 1)),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=(7, 7), strides=2, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=2, padding="same", activation='relu', input_shape=(256, 256, 1)),
             tf.keras.layers.MaxPool2D(pool_size=3, strides=1, padding="same"),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", activation='relu'),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", activation='relu'),
-            tf.keras.layers.MaxPool2D(pool_size=3, strides=1, padding="same"),
+            tf.keras.layers.Conv2D(filters=128, kernel_size=(11, 11), strides=4, padding="same", activation='relu'),
+            tf.keras.layers.AveragePooling2D(pool_size=3, strides=1, padding="same"),
+            tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), strides=1, padding="same", activation='relu'),
             tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), strides=1, padding="same", activation='relu'),
             tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), strides=1, padding="same", activation='relu'),
             tf.keras.layers.MaxPool2D(pool_size=3, strides=2, padding="same"),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(units=512, activation='relu'),
-            tf.keras.layers.Dense(units=256, activation='relu'),
-            tf.keras.layers.Dense(units=64, activation='relu'),
-            tf.keras.layers.Dense(units=3, activation='softmax')
+            tf.keras.layers.GlobalAveragePooling2D(),
+            # tf.keras.layers.Dense(units=512, activation='relu'),
+            # tf.keras.layers.Dense(units=256, activation='relu'),
+            # tf.keras.layers.Dense(units=64, activation='relu'),
+            tf.keras.layers.Dense(units = 3, activation = 'softmax')
         ])
+
         # view summary
         model.summary()
 
         # compile
         model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=3e-4),
-            loss=tf.keras.losses.CategoricalCrossentropy(),
-            metrics=metrics
+            optimizer = tf.keras.optimizers.Adam(learning_rate=3e-4),
+            loss      = tf.keras.losses.CategoricalCrossentropy(),
+            metrics   = metrics
         )
 
         return model
