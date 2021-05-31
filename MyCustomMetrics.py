@@ -12,6 +12,26 @@ class MyCustomMetrics:
         y_pred = tf.argmax(y_pred, axis=1)
         return tf.math.confusion_matrix(y_true, y_pred)         # confusion matrix
 
+    def __categorical_macro_recall(self, y_true, y_pred):
+        cm = self.__categorical_confusion_mat(y_true, y_pred)
+        true_pos = tf.linalg.diag_part(cm)
+        false_neg = tf.subtract(tf.reduce_sum(cm, axis=1), true_pos)
+        return tf.divide(true_pos, tf.add(true_pos, false_neg))
+
+    def __categorical_macro_precision(self, y_true, y_pred):
+        cm = self.__categorical_confusion_mat(y_true, y_pred)
+        true_pos = tf.linalg.diag_part(cm)
+        false_pos = tf.subtract(tf.reduce_sum(cm, axis=0), true_pos)
+        return tf.divide(true_pos, tf.add(true_pos, false_pos))
+
+    def __get_class_weight(self, y_true, y_pred):
+        cm = self.__categorical_confusion_mat(y_true, y_pred)
+        actual = tf.reduce_sum(cm, axis=1)
+        total = tf.reduce_sum(actual)
+        return tf.divide(actual, total)
+
+########################## PUBLIC METHODS ##########################
+
     def categorical_true_positives(self, y_true, y_pred):
         cm = self.__categorical_confusion_mat(y_true, y_pred)
         return tf.linalg.trace(cm)
@@ -32,24 +52,26 @@ class MyCustomMetrics:
         return true_pos / (false_pos + true_pos)
 
     def macro_weighted_precision(self, y_true, y_pred):
-        cm = self.__categorical_confusion_mat(y_true, y_pred)
-        true_pos        = tf.linalg.diag_part(cm)
-        false_pos       = tf.subtract(tf.reduce_sum(cm, axis = 0, keepdims = True), true_pos)
-        class_precision = tf.divide(true_pos, tf.add(true_pos, false_pos))
-        actual          = tf.reduce_sum(cm, axis = 1)
-        total           = tf.reduce_sum(actual)
-        class_weight    = tf.divide(actual, total)
+        class_weight = self.__get_class_weight(y_true, y_pred)
+        class_precision = self.__categorical_macro_precision(y_true, y_pred)
         return tf.reduce_sum(tf.multiply(class_precision, class_weight))
 
     def macro_weighted_recall(self, y_true, y_pred):
-        cm = self.__categorical_confusion_mat(y_true, y_pred)
-        true_pos = tf.linalg.diag_part(cm)
-        false_neg = tf.subtract(tf.reduce_sum(cm, axis = 1), true_pos)
-        class_recall = tf.divide(true_pos, tf.add(true_pos, false_neg))
-        actual = tf.reduce_sum(cm, axis = 1)
-        total = tf.reduce_sum(actual)
-        class_weight = tf.divide(actual, total)
+        class_recall = self.__categorical_macro_recall(y_true, y_pred)
+        class_weight = self.__get_class_weight(y_true, y_pred)
         return tf.reduce_sum(tf.multiply(class_recall, class_weight))
+
+    def macro_weighted_f1score(self, y_true, y_pred):
+        class_weight = self.__get_class_weight(y_true, y_pred)
+        p = self.__categorical_macro_precision(y_true, y_pred)
+        r = self.__categorical_macro_recall(y_true, y_pred)
+        num = tf.multiply(p, r)
+        num = tf.multiply(2, num)
+        den = tf.add(p, r)
+        den = tf.add(den, 1e-7)
+        f1score = tf.divide(num, den)
+        return tf.reduce_sum(tf.multiply(f1score, class_weight))
+
 
     def categorical_recall(self, y_true, y_pred):
         true_pos  = self.categorical_true_positives(y_true, y_pred)
@@ -65,8 +87,8 @@ class MyCustomMetrics:
     # @Source: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html#sklearn.metrics.accuracy_score
     def categorical_weighted_accuracy(self, y_true, y_pred):
         cm       = self.__categorical_confusion_mat(y_true, y_pred)
+        weight   = tf.cast(self.__get_class_weight(y_true, y_pred), tf.float32)
         actual   = tf.cast(tf.reduce_sum(cm, axis = 1), tf.float32)
-        weight   = tf.cast(tf.divide(actual, tf.multiply(tf.ones_like(actual), tf.reduce_sum(actual))), tf.float32)
         correct  = tf.cast(tf.linalg.diag_part(cm), tf.float32)
         accuracy = tf.divide(correct, tf.add(actual, 1e-7))
         return tf.reduce_sum(tf.multiply(accuracy, weight))
@@ -81,34 +103,34 @@ class MyCustomMetrics:
 
 # THIS IS A TEST
 
-from sklearn.metrics import f1_score
-from sklearn.metrics import balanced_accuracy_score
-from sklearn.metrics import accuracy_score
-
-my_custom_metrics = MyCustomMetrics()
-
-# CHECK
-my_custom_metrics.macro_weighted_recall(y_true = [[0, 1, 0],       [0, 1, 0],       [0, 0, 1],       [1, 0, 0], [0, 0, 1]],
-                                                y_pred = [[0.1, 0.8, 0.1], [0.2, 0.7, 0.1], [0.4, 0.3, 0.3], [0, 1, 0], [0, 0, 1]])
-
-f1_score(y_true = [1, 1, 2, 0, 2],
-         y_pred = [1, 1, 0, 1, 2],
-         average = 'micro')
-
-balanced_accuracy_score(y_true = [1, 1, 2, 0, 2],
-                        y_pred = [1, 1, 0, 1, 2])
-
-accuracy_score(y_true = [1, 1, 2, 0, 2],
-               y_pred = [1, 1, 0, 1, 2],
-               normalize=True)
-
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-
-precision_score(y_true = [1, 1, 2, 0, 2],
-                y_pred = [1, 1, 0, 1, 2],
-                average = 'weighted')
-
-recall_score(y_true = [1, 1, 2, 0, 2],
-             y_pred = [1, 1, 0, 1, 2],
-             average = 'weighted')
+# from sklearn.metrics import f1_score
+# from sklearn.metrics import balanced_accuracy_score
+# from sklearn.metrics import accuracy_score
+#
+# my_custom_metrics = MyCustomMetrics()
+#
+# # CHECK
+# my_custom_metrics.categorical_weighted_accuracy(y_true = [[0, 1, 0],       [0, 1, 0],       [0, 0, 1],       [1, 0, 0], [0, 0, 1]],
+#                                          y_pred = [[0.1, 0.8, 0.1], [0.2, 0.7, 0.1], [0.4, 0.3, 0.3], [0, 1, 0], [0, 0, 1]])
+#
+# f1_score(y_true = [1, 1, 2, 0, 2],
+#          y_pred = [1, 1, 0, 1, 2],
+#          average = 'weighted')
+#
+# balanced_accuracy_score(y_true = [1, 1, 2, 0, 2],
+#                         y_pred = [1, 1, 0, 1, 2])
+#
+# accuracy_score(y_true = [1, 1, 2, 0, 2],
+#                y_pred = [1, 1, 0, 1, 2],
+#                normalize=True)
+#
+# from sklearn.metrics import precision_score
+# from sklearn.metrics import recall_score
+#
+# precision_score(y_true = [1, 1, 2, 0, 2],
+#                 y_pred = [1, 1, 0, 1, 2],
+#                 average = 'weighted')
+#
+# recall_score(y_true = [1, 1, 2, 0, 2],
+#              y_pred = [1, 1, 0, 1, 2],
+#              average = 'weighted')
