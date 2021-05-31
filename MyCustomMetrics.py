@@ -107,35 +107,35 @@ class MyCustomMetrics:
         return tf.reduce_mean(accuracy)
 
 # THIS IS A TEST
-
-from sklearn.metrics import f1_score
-from sklearn.metrics import balanced_accuracy_score
-from sklearn.metrics import accuracy_score
-
-my_custom_metrics = MyCustomMetrics()
-
-# CHECK
-my_custom_metrics.macro_weighted_f1score(y_true = [[0, 1, 0],       [0, 1, 0],       [0, 0, 1],       [1, 0, 0], [0, 0, 1]],
-                                         y_pred = [[0.1, 0.8, 0.1], [0.2, 0.7, 0.1], [0.4, 0.3, 0.3], [0, 1, 0], [0, 0, 1]])
-
-f1_score(y_true = [1, 1, 2, 0, 2],
-         y_pred = [1, 1, 0, 1, 2],
-         average = 'weighted')
-
-balanced_accuracy_score(y_true = [1, 1, 2, 0, 2],
-                        y_pred = [1, 1, 0, 1, 2])
-
-accuracy_score(y_true = [1, 1, 2, 0, 2],
-               y_pred = [1, 1, 0, 1, 2],
-               normalize=True)
-
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-
-precision_score(y_true = [1, 1, 2, 0, 2],
-                y_pred = [1, 1, 0, 1, 2],
-                average = 'weighted')
-
-recall_score(y_true = [1, 1, 2, 0, 2],
-             y_pred = [1, 1, 0, 1, 2],
-             average = 'weighted')
+#
+# from sklearn.metrics import f1_score
+# from sklearn.metrics import balanced_accuracy_score
+# from sklearn.metrics import accuracy_score
+#
+# my_custom_metrics = MyCustomMetrics()
+#
+# # CHECK
+# my_custom_metrics.macro_weighted_f1score(y_true = [[0, 1, 0],       [0, 1, 0],       [0, 0, 1],       [1, 0, 0], [0, 0, 1]],
+#                                          y_pred = [[0.1, 0.8, 0.1], [0.2, 0.7, 0.1], [0.4, 0.3, 0.3], [0, 1, 0], [0, 0, 1]])
+#
+# f1_score(y_true = [1, 1, 2, 0, 2],
+#          y_pred = [1, 1, 0, 1, 2],
+#          average = 'weighted')
+#
+# balanced_accuracy_score(y_true = [1, 1, 2, 0, 2],
+#                         y_pred = [1, 1, 0, 1, 2])
+#
+# accuracy_score(y_true = [1, 1, 2, 0, 2],
+#                y_pred = [1, 1, 0, 1, 2],
+#                normalize=True)
+#
+# from sklearn.metrics import precision_score
+# from sklearn.metrics import recall_score
+#
+# precision_score(y_true = [1, 1, 2, 0, 2],
+#                 y_pred = [1, 1, 0, 1, 2],
+#                 average = 'weighted')
+#
+# recall_score(y_true = [1, 1, 2, 0, 2],
+#              y_pred = [1, 1, 0, 1, 2],
+#              average = 'weighted')
