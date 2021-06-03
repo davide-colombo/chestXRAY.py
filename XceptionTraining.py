@@ -84,9 +84,9 @@ my_custom_metric = MyCustomMetrics()
 custom_metrics = [
     my_custom_metric.categorical_weighted_accuracy,
     my_custom_metric.categorical_balanced_accuracy,
-    my_custom_metric.macro_weighted_f1score,
-    my_custom_metric.macro_weighted_precision,
-    my_custom_metric.macro_weighted_recall,
+    my_custom_metric.macro_f1score,
+    my_custom_metric.macro_precision,
+    my_custom_metric.macro_recall,
     my_custom_metric.categorical_true_positives
 ]
 
