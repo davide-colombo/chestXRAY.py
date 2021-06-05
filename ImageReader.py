@@ -63,7 +63,6 @@ train_classes = DatasetUtils.get_class_from_path(X_train)
 train_dict = {'path': X_train, 'patient': train_patient, 'class': train_classes}
 train_df = DatasetUtils.get_dataframe_from_dict(train_dict)
 
-
 # TRAINING DF GROUPED BY CLASS AND PATIENT
 train_gb = train_df.groupby(by = ['class', 'patient'])
 
@@ -71,22 +70,21 @@ train_gb = train_df.groupby(by = ['class', 'patient'])
 n_by_patient_class = train_gb['path'].count()
 n_by_patient_class.head(10)
 
-train_bacteria_in  = []
-train_bacteria_out = []
+# INDICES IN AND OUT
+train_bacteria_in, train_bacteria_out = DatasetUtils.undersample_class_gb_patient(train_gb, class_name = 'bacteria')
 
-for keys in train_gb.indices:
-    if keys[0] == 'bacteria':               # if is the majority class...
-        if len(train_gb.indices[keys]) > 2:
-            selected = random.sample(list(train_gb.indices[keys]), 2)
-            not_selected = [idx for idx in list(train_gb.indices[keys]) if idx not in selected]
-            train_bacteria_in.extend(selected)
-            train_bacteria_out.extend(not_selected)
-        else:
-            train_bacteria_in.extend(list(train_gb.indices[keys]))
+# len(train_bacteria_in)
+# len(train_bacteria_out)
 
-# now we have obtained 1394 bacteria images in the training set
-undersampled_train_bacteria_path = train_df['path'].iloc[train_bacteria_in]
-not_selected_train_bacteria_path = train_df['path'].iloc[train_bacteria_out]
+# CHECK ON INDICES
+# i = 0
+# for idx in train_bacteria_in:
+#     if idx in train_bacteria_out:
+#         i += 1
+# print(i)
+
+# ALL TRAIN BACTERIA EXAMPLES
+train_bacteria_total = train_df['path'].iloc[train_bacteria_in]
 
 # COMPUTE THE NUMBER OF VIRUS IMAGES TO OVERSAMPLE
 n_virus_to_oversample = len(undersampled_train_bacteria_path) - train_df.groupby('class')['path'].count().loc['virus']
