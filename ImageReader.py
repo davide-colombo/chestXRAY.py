@@ -84,7 +84,7 @@ train_bacteria_in, train_bacteria_out = DatasetUtils.undersample_class_gb_patien
 # print(i)
 
 # ALL TRAIN BACTERIA EXAMPLES
-train_bacteria_total = train_df['path'].iloc[train_bacteria_in]
+train_bacteria_total = list(train_df['path'].iloc[train_bacteria_in])
 
 # COMPUTE THE NUMBER OF VIRUS IMAGES TO OVERSAMPLE
 n_virus_extra = len(train_bacteria_total) - train_df.groupby('class')['path'].count().loc['virus']
@@ -120,6 +120,10 @@ train_normal_total.extend(train_normal_extra_path)
 
 # CHECK
 print('Number of normal images is equal to the number of bacteria images? {}'.format(len(train_normal_total) == len(train_bacteria_total)))
+
+train_names   = train_bacteria_total + train_normal_total + train_virus_total
+train_classes = ['bacteria'] * len(train_bacteria_total) + ['normal'] * len(train_normal_total) + ['virus'] * len(train_virus_total)
+
 
 
 # Here, we can see that there are some patient that appear in both virus and bacteria classes
