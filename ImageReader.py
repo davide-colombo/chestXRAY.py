@@ -1,8 +1,6 @@
-import random
 
-import matplotlib.pyplot as plt
+import random
 from sklearn.model_selection import train_test_split
-import numpy as np
 import pandas as pd
 import cv2
 import os
@@ -15,34 +13,47 @@ def list_files_from_directory(path):
     return [os.path.join(root, file) for root, dirs, files in os.walk(path) for file in files if not file.startswith('.')]
 
 all_files = list_files_from_directory(root_dir_path + dataset_dir)
-len(all_files)              # 5855 because one was removed
-len(set(all_files))         # no duplicate names
-
-# NAME DATAFRAME
-name_df = pd.DataFrame(
-    all_files,
-    index = ['img' + str(i) for i in range(0, len(all_files))],
-    columns = ['name']
-)
+# len(all_files)              # 5855 because one was removed
+# len(set(all_files))         # no duplicate names
 
 # EXTRACT PATIENT ID
-patient_id = [name.split('/')[-1].split('_')[0] for name in name_df['name']]
-patient_id = [name if name.startswith('person') else 'unknown' for name in patient_id]
-name_df['patient'] = pd.Categorical(patient_id)
+patient_id = [name.split('/')[-1].split('_')[0]
+              if name.split('/')[-1].startswith('person')
+              else 'unknown'
+              for name in all_files]
 
 # EXTRACT CLASS NAME
-class_name = [name.split('/')[-1] for name in name_df['name']]
+class_name = [name.split('/')[-1] for name in all_files]
 class_name = ['bacteria' if 'bacteria' in name else 'virus' if 'virus' in name else 'normal' for name in class_name]
-name_df['class'] = pd.Categorical(class_name)
 
 # TRAIN / TEST SPLIT
 X_train, X_val, y_train, y_val = train_test_split(all_files, class_name,
                                                   test_size = 0.2,
-                                                  stratify = class_name)
-# TEST / VAL SPLIT
+                                                  stratify = class_name,
+                                                  random_state = 1234)
+# TRAIN / VAL SPLIT
 X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
                                                     test_size = 0.2,
-                                                    stratify = y_train)
+                                                    stratify = y_train,
+                                                    random_state = 1234)
+
+# CHECK ON THE NUMBER OF EXAMPLES
+# len(X_train)
+# len(X_test)
+# len(X_val)
+
+# CHECK ON THE PROPORTION OF EXAMPLES
+# len([name for name in y_train if name == 'bacteria'])
+# len([name for name in y_train if name == 'normal'])
+# len([name for name in y_train if name == 'virus'])
+#
+# len([name for name in y_test if name == 'bacteria'])
+# len([name for name in y_test if name == 'normal'])
+# len([name for name in y_test if name == 'virus'])
+#
+# len([name for name in y_val if name == 'bacteria'])
+# len([name for name in y_val if name == 'normal'])
+# len([name for name in y_val if name == 'virus'])
 
 train_patient = [name.split('/')[-1].split('_')[0] if name.split('/')[-1].startswith('person') else 'unknown' for name in X_train]
 train_df = pd.DataFrame(
