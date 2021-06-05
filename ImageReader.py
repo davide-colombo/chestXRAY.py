@@ -108,18 +108,18 @@ train_virus_total.extend(train_virus_extra_path)
 # CHECK
 print('Number of virus images is equal to number of bacteria images? {}'.format(len(train_virus_total) == len(train_bacteria_total)))
 
-
-# OVERSAMPLE THE NORMAL IMAGES FROM THE TRAINING SET: FOR THE NORMAL CLASS THERE ARE NO PATIENT!!
+# OVERSAMPLE THE NORMAL IMAGES FROM THE TRAINING SET
 
 train_normal_total = list(train_df.loc[train_df['class'] == 'normal']['path'])
-len(train_normal_total)
-train_normal_oversample_indices = random.sample(list(train_df.loc[train_df['class'] == 'normal'].index),
-                                                n_normal_to_oversample)
-train_normal_oversample_path = list(train_df['path'].iloc[train_normal_oversample_indices])
-
-train_normal_total.extend(train_normal_oversample_path)
 # len(train_normal_total)
-# print('Number of normal images is equal to the number of bacteria images? {}'.format(len(train_normal_total) == len(undersampled_train_bacteria_path)))
+train_normal_extra_indices = random.sample(list(train_df.loc[train_df['class'] == 'normal'].index), n_normal_extra)
+train_normal_extra_path    = list(train_df['path'].iloc[train_normal_extra_indices])
+# len(train_normal_extra_path)
+train_normal_total.extend(train_normal_extra_path)
+# len(train_normal_total)
+
+# CHECK
+print('Number of normal images is equal to the number of bacteria images? {}'.format(len(train_normal_total) == len(train_bacteria_total)))
 
 
 # Here, we can see that there are some patient that appear in both virus and bacteria classes
