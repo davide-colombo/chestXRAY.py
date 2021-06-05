@@ -39,6 +39,9 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
                                                     stratify = y_train,
                                                     random_state = 1234)
 
+my_utils = DatasetUtils()
+my_utils.balance_dataset(path_list = X_train, major_classes = 'bacteria', minor_classes = ['normal', 'virus'])
+
 # CHECK ON THE NUMBER OF EXAMPLES
 # len(X_train)
 # len(X_test)
