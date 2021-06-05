@@ -87,34 +87,26 @@ train_bacteria_in, train_bacteria_out = DatasetUtils.undersample_class_gb_patien
 train_bacteria_total = train_df['path'].iloc[train_bacteria_in]
 
 # COMPUTE THE NUMBER OF VIRUS IMAGES TO OVERSAMPLE
-n_virus_to_oversample = len(undersampled_train_bacteria_path) - train_df.groupby('class')['path'].count().loc['virus']
+n_virus_extra = len(train_bacteria_total) - train_df.groupby('class')['path'].count().loc['virus']
 
 # COMPUTE THE NUMBER OF NORMAL IMAGES TO OVERSAMPLE
-n_normal_to_oversample = len(undersampled_train_bacteria_path) - train_df.groupby('class')['path'].count().loc['normal']
+n_normal_extra = len(train_bacteria_total) - train_df.groupby('class')['path'].count().loc['normal']
 
+# OVERSAMPLE THE VIRUS CLASS
+train_virus_single = DatasetUtils.oversample_class_gb_patient(train_gb, class_name = 'virus')
 
-# NOW IT'S TIME TO OVERSAMPLE THE MINORITY CLASSES!!!
+# RANDOMLY SELECT THE OCCURRENCES TO REPEAT
+train_virus_extra_indices = random.sample(train_virus_single, n_virus_extra)
+train_virus_extra_path = list(train_df['path'].iloc[train_virus_extra_indices])
 
-train_virus_single_occurrence = []
-for keys in train_gb.indices:
-    if keys[0] == 'virus':
-        if len(train_gb.indices[keys]) == 1:
-            train_virus_single_occurrence.extend(list(train_gb.indices[keys]))
-
-# PERSON VIRUS SINGLE OCCURRENCES
-train_virus_index_to_oversample = random.sample(train_virus_single_occurrence, n_virus_to_oversample)
-train_virus_oversampled_path = list(train_df['path'].iloc[train_virus_index_to_oversample])
-
-# train_df.loc[train_df['class'] == 'virus']            # this produces a DataFrame object
-
-# select all the virus path from the training set
+# SELECT ALL THE TOTAL VIRUS OCCURRENCES
 train_virus_total = [path for path in train_df.loc[train_df['class'] == 'virus']['path']]
 # len(train_virus_total)
-train_virus_total.extend(train_virus_oversampled_path)
+train_virus_total.extend(train_virus_extra_path)
 # len(train_virus_total)
-# print('Number of virus images is equal to number of bacteria images? {}'.format(
-#                                                   len(train_virus_total) == len(undersampled_train_bacteria_path)
-#                                                   ))
+
+# CHECK
+print('Number of virus images is equal to number of bacteria images? {}'.format(len(train_virus_total) == len(train_bacteria_total)))
 
 
 # OVERSAMPLE THE NORMAL IMAGES FROM THE TRAINING SET: FOR THE NORMAL CLASS THERE ARE NO PATIENT!!
