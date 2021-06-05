@@ -1,9 +1,11 @@
 
 import random
-from sklearn.model_selection import train_test_split
 import pandas as pd
 import cv2
 import os
+
+from sklearn.model_selection import train_test_split
+from DatasetUtils import DatasetUtils
 
 # ROOT DIRECTORY
 root_dir_path = '/Users/davidecolombo/Desktop/dataset'
@@ -55,15 +57,12 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
 # len([name for name in y_val if name == 'normal'])
 # len([name for name in y_val if name == 'virus'])
 
-train_patient = [name.split('/')[-1].split('_')[0] if name.split('/')[-1].startswith('person') else 'unknown' for name in X_train]
-train_df = pd.DataFrame(
-    X_train,
-    columns = ['path']
-)
+# GET TRAIN PATIENT OR UNKNOWN
+train_patient = DatasetUtils.get_patient_from_path(X_train)
+train_classes = DatasetUtils.get_class_from_path(X_train)
+train_dict = {'path': X_train, 'patient': train_patient, 'class': train_classes}
+train_df = DatasetUtils.get_dataframe_from_dict(train_dict)
 
-train_df['patient'] = train_patient
-train_df['class']   = y_train
-train_df.head()
 
 # TRAINING DF GROUPED BY CLASS AND PATIENT
 train_gb = train_df.groupby(by = ['class', 'patient'])

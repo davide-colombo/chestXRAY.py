@@ -12,6 +12,16 @@ class DatasetUtils:
                 for name in path_list]
 
     @staticmethod
+    def get_class_from_path(path_list):
+        all_names = [name.split('/')[-1] for name in path_list]
+        return ['bacteria'
+                if 'bacteria' in name
+                else 'virus'
+                if 'virus' in name
+                else 'normal'
+                for name in all_names]
+
+    @staticmethod
     def get_dataframe_from_dict(dictionary):
         return pd.DataFrame(
             dictionary,
