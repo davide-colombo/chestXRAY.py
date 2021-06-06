@@ -56,7 +56,7 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
 # len([path for path in X_train for val in X_val if path == val])
 # len([path for path in X_test for val in X_val if path == val])
 
-###################### CREATE BALANCE TRAINING SET ######################
+###################### CREATE A BALANCED VERSION OF THE TRAINING SET ######################
 
 major_classes = 'bacteria'
 minor_classes = ['normal', 'virus']
@@ -70,28 +70,8 @@ train_path, train_classes = my_utils.balance_dataset(X_train, major_classes, min
 # len(train_classes)
 # len([name for name in train_classes if name == 'bacteria'])
 
-# VALIDATION SET
-validation_path, validation_classes = my_utils.balance_dataset(X_val, major_classes, minor_classes)
-
-# len(validation_path)
-# len(validation_classes)
-# len([name for name in validation_classes if name == 'virus'])
-
-# TEST SET
-test_path, test_classes = my_utils.balance_dataset(X_test, major_classes, minor_classes)
-
-# len(test_path)
-# len(test_classes)
-# len([name for name in test_classes if name == 'normal'])
-
 ###################### READ ALL IMAGES ######################
 
-# from my_image_reader import MyImageReader
-
-# Read all images
-# normal_images   = MyImageReader.import_from_path(path= all_files[0], img_width=256, img_height=256)
-# bacteria_images = MyImageReader.import_from_path(path= all_files[1], img_width=256, img_height=256)
-# virus_images    = MyImageReader.import_from_path(path= all_files[2], img_width=256, img_height=256)
 
 ###################### PLOT SOME IMAGES ######################
 
