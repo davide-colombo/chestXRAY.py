@@ -63,12 +63,26 @@ minor_classes = ['normal', 'virus']
 
 my_utils = DatasetUtils()
 
-# training set
+# TRAINING SET
 train_path, train_classes = my_utils.balance_dataset(X_train, major_classes, minor_classes)
 
 # len(train_path)
 # len(train_classes)
-# len([name for name in train_classes if name == 'virus'])
+# len([name for name in train_classes if name == 'bacteria'])
+
+# VALIDATION SET
+validation_path, validation_classes = my_utils.balance_dataset(X_val, major_classes, minor_classes)
+
+# len(validation_path)
+# len(validation_classes)
+# len([name for name in validation_classes if name == 'virus'])
+
+# TEST SET
+test_path, test_classes = my_utils.balance_dataset(X_test, major_classes, minor_classes)
+
+# len(test_path)
+# len(test_classes)
+# len([name for name in test_classes if name == 'normal'])
 
 ###################### READ ALL IMAGES ######################
 
