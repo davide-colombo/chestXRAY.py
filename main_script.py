@@ -85,6 +85,24 @@ rnd = my_utils.shuffle_indices(list(range(0, len(train_images))))
 train_images_shuffle  = [train_images[i] for i in rnd]
 train_classes_shuffle = [train_classes[i] for i in rnd]
 
+# CONVERT INTO NPARRAY
+train_images_shuffle  = my_img_reader.convert_list_to_nparray(train_images_shuffle)
+train_classes_shuffle = my_img_reader.convert_list_to_nparray(train_classes_shuffle)
+
+###################### RESHAPE VALIDATION AND TEST IMAGES ######################
+
+validation_images = my_img_reader.get_preprocessed_images(X_val, ImageReader.GRAYSCALE,
+                                                          d = (256, 256), s = 255, shape = (256, 256, 1))
+
+validation_images  = my_img_reader.convert_list_to_nparray(validation_images)
+validation_classes = my_img_reader.convert_list_to_nparray(y_val)
+
+test_images = my_img_reader.get_preprocessed_images(X_test, ImageReader.GRAYSCALE,
+                                                    d = (256, 256), s = 255, shape = (256, 256, 1))
+
+test_images  = my_img_reader.convert_list_to_nparray(test_images)
+test_classes = my_img_reader.convert_list_to_nparray(y_test)
+
 ###################### PLOT SOME IMAGES ######################
 
 plt.rcParams["figure.figsize"] = (10, 10)
@@ -98,62 +116,33 @@ def plot_images(images, labels):
 
 plot_images(train_images_shuffle[:9], train_classes_shuffle[:9])
 
-###################### DEFINE DATA GENERATOR ######################
-
-# Create a data generator for VGG16 architecture
-vgg16_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
-    preprocessing_function= tf.keras.applications.vgg16.preprocess_input,
-    validation_split= 0.3
-)
-
 ###################### DEFINE HYPER PARAMETERS ######################
 
-# define vgg16 parameters
-data_dir      = "/Users/davidecolombo/Desktop/dataset/chest_xray_keras/"
-vgg16_imgsize = (224, 224)
-batch_size    = 128
+train_batch   = 32
+test_batch    = 256
 epochs        = 50
-
-###################### DEFINE TRAINING SET ######################
-
-training = vgg16_datagen.flow_from_directory(
-    directory   = data_dir,
-    target_size = vgg16_imgsize,
-    class_mode  = 'categorical',
-    batch_size  = batch_size,
-    shuffle     = True,
-    seed        = 1234,
-    subset      = 'training'
-)
-
-###################### DEFINE VALIDATION SET ######################
-
-validation = vgg16_datagen.flow_from_directory(
-    directory   = data_dir,
-    target_size = vgg16_imgsize,
-    class_mode  = 'categorical',
-    batch_size  = batch_size,
-    shuffle     = True,
-    seed        = 1234,
-    subset      = 'validation'
-)
 
 ###################### DEFINE CUSTOM METRICS ######################
 
 my_custom_metric = MyCustomMetrics()
 
 custom_metrics = [
-    tf.keras.metrics.CategoricalAccuracy(name = 'acc'),
-    my_custom_metric.categorical_f1_score,
-    my_custom_metric.categorical_precision,
-    my_custom_metric.categorical_recall,
-    my_custom_metric.categorical_true_positives
+    my_custom_metric.balanced_accuracy,
+    my_custom_metric.macro_f1score,
+    my_custom_metric.macro_precision,
+    my_custom_metric.macro_recall,
+    my_custom_metric.macro_bacteria_precision,             # bacteria precision
+    my_custom_metric.macro_bacteria_recall,                # bacteria recall
+    my_custom_metric.macro_normal_precision,               # normal precision
+    my_custom_metric.macro_normal_recall,                  # normal recall
+    my_custom_metric.macro_virus_precision,                # virus precision
+    my_custom_metric.macro_virus_recall                    # virus recall
 ]
 
 ###################### DEFINE CALLBACKS ######################
 
 early_stopping = tf.keras.callbacks.EarlyStopping(
-    monitor  = 'val_categorical_f1_score',
+    monitor  = 'val_macro_f1_score',
     verbose  = 1,
     patience = 10,
     mode     ='max',
@@ -162,26 +151,26 @@ early_stopping = tf.keras.callbacks.EarlyStopping(
 
 model_ckpt = tf.keras.callbacks.ModelCheckpoint(
     filepath = os.getcwd() + '/checkpoint/',
-    monitor  = 'val_categorical_f1_score',
+    monitor  = 'val_macro_f1_score',
     mode     = 'max',
     verbose  = 1,
     save_best_only = True
 )
 
-###################### DEFINE VGG16 MODEL ######################
+###################### DEFINE THE MODEL ######################
 
-# must have 3 channels
-vgg16_model = ModelFactory.make_vgg16(metrics = custom_metrics, img_size = vgg16_imgsize, channels = 3)
+my_model = ModelFactory.make_model(custom_metrics)
 
-###################### TRAIN VGG16 MODEL ######################
+###################### TRAIN THE MODEL ######################
 
-vgg16_history = vgg16_model.fit_generator(
-    training,
-    validation_data  = validation,
+history = my_model.fit(
+    train_images_shuffle,
+    validation_data  = (validation_images, y_val),
     epochs           = epochs,
-    batch_size       = batch_size,
-    steps_per_epoch  = 4101 // batch_size,
-    validation_steps = 1755 // batch_size,
-    verbose   = 1,
-    callbacks = [early_stopping, model_ckpt]
+    batch_size       = train_batch,
+    validation_batch_size = test_batch,
+    verbose          = 1,
+    callbacks        = [early_stopping, model_ckpt]
 )
+
+mnist_train, mnist_test = tf.keras.datasets.mnist.load_data()

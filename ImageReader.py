@@ -19,9 +19,13 @@ class ImageReader:
     def reshape_array_of_images(self, array, shape):
         return [np.reshape(img, shape) for img in array]
 
+    def convert_list_to_nparray(self, l):
+        return np.array(l)
+
     def get_preprocessed_images(self, pathlist, color_flag, d, s, shape):
         array = self.import_images_from_pathlist(pathlist, color_flag)
         array = self.resize_array_of_images(array, d)
         array = self.scale_array_of_images(array, scale_factor = s)
         array = self.reshape_array_of_images(array, shape)
+        array = self.convert_list_to_nparray(array)
         return array

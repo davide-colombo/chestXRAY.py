@@ -83,7 +83,7 @@ class ModelFactory:
 
 # MAKE MODEL FROM SCRATCH
     @staticmethod
-    def make_model(metrics):
+    def make_model(metrics, lr = 3e-4):
         # define the model
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=2, padding="same", activation='relu', input_shape=(256, 256, 1)),
@@ -106,7 +106,7 @@ class ModelFactory:
 
         # compile
         model.compile(
-            optimizer = tf.keras.optimizers.Adam(learning_rate=3e-4),
+            optimizer = tf.keras.optimizers.Adam(learning_rate = lr),
             loss      = tf.keras.losses.CategoricalCrossentropy(),
             metrics   = metrics
         )
