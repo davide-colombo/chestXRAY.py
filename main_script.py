@@ -1,16 +1,11 @@
 
 ###################### IMPORTING LIBRARIES ######################
 
-import random                           # random split
-
-import numpy
-import pandas as pd                     # dataframe manipulation
-import cv2                              # image operation
 import tensorflow as tf                 # deep learning
 import matplotlib.pyplot as plt         # plot
 import os                               # operating system io
-
 from sklearn.model_selection import train_test_split
+
 from DatasetUtils import DatasetUtils
 from MyCustomMetrics import MyCustomMetrics
 from ModelFactory import ModelFactory
@@ -35,12 +30,17 @@ all_files = list_files_from_directory(root_dir_path + dataset_dir)
 class_name = [name.split('/')[-1] for name in all_files]
 class_name = ['bacteria' if 'bacteria' in name else 'virus' if 'virus' in name else 'normal' for name in class_name]
 
+# len([name for name in class_name if name == 'normal'])
+
 ###################### TRAIN AND VALIDATION SPLIT ######################
 
 X_train, X_val, y_train, y_val = train_test_split(all_files, class_name,
                                                   test_size = 0.2,
                                                   stratify = class_name,
                                                   random_state = 1234)
+
+# len([name for name in y_train if name == 'normal'])
+# len([name for name in y_val if name == 'virus'])
 
 ###################### TRAIN AND TEST SPLIT ######################
 
@@ -49,23 +49,8 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
                                                     stratify = y_train,
                                                     random_state = 1234)
 
-# CHECK ON THE NUMBER OF EXAMPLES
-# len(X_train)
-# len(X_test)
-# len(X_val)
-
-# CHECK ON THE PROPORTION OF EXAMPLES
 # len([name for name in y_train if name == 'bacteria'])
-# len([name for name in y_train if name == 'normal'])
-# len([name for name in y_train if name == 'virus'])
-#
 # len([name for name in y_test if name == 'bacteria'])
-# len([name for name in y_test if name == 'normal'])
-# len([name for name in y_test if name == 'virus'])
-#
-# len([name for name in y_val if name == 'bacteria'])
-# len([name for name in y_val if name == 'normal'])
-# len([name for name in y_val if name == 'virus'])
 
 ###################### CREATE BALANCE TRAINING SET ######################
 
