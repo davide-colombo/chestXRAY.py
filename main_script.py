@@ -52,6 +52,10 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
 # len([name for name in y_train if name == 'bacteria'])
 # len([name for name in y_test if name == 'bacteria'])
 
+# len([path for path in X_train for test in X_test if path == test])
+# len([path for path in X_train for val in X_val if path == val])
+# len([path for path in X_test for val in X_val if path == val])
+
 ###################### CREATE BALANCE TRAINING SET ######################
 
 major_classes = 'bacteria'
