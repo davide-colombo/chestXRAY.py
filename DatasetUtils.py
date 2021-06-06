@@ -109,3 +109,6 @@ class DatasetUtils:
             label = [minor_classes[i]] * n_minor[i]
             tmp.extend(label)
         return tmp
+
+    def shuffle_indices(self, indices):
+        return random.sample(indices, len(indices))

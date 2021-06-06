@@ -7,6 +7,7 @@ import os                               # operating system io
 from sklearn.model_selection import train_test_split
 
 from DatasetUtils import DatasetUtils
+from ImageReader import ImageReader
 from MyCustomMetrics import MyCustomMetrics
 from ModelFactory import ModelFactory
 
@@ -72,12 +73,30 @@ train_path, train_classes = my_utils.balance_dataset(X_train, major_classes, min
 
 ###################### READ ALL IMAGES ######################
 
+my_img_reader = ImageReader()
+train_images = my_img_reader.import_images_from_pathlist(train_path, color_flag = ImageReader.GRAYSCALE)
+train_images = my_img_reader.resize_array_of_images(train_images, d = (256, 256))
+train_images = my_img_reader.scale_array_of_images(train_images, scale_factor = 255)
+train_images = my_img_reader.reshape_array_of_images(train_images, (256, 256, 1))
+
+###################### SHUFFLE TRAINING IMAGES ######################
+
+rnd = my_utils.shuffle_indices(list(range(0, len(train_images))))
+train_images_shuffle  = [train_images[i] for i in rnd]
+train_classes_shuffle = [train_classes[i] for i in rnd]
 
 ###################### PLOT SOME IMAGES ######################
 
-# plt.imshow(normal_images[0])
-# plt.imshow(bacteria_images[0])
-# plt.imshow(virus_images[0])
+plt.rcParams["figure.figsize"] = (10, 10)
+
+def plot_images(images, labels):
+    plt.subplots_adjust(hspace=0.8)
+    for n, img in enumerate(images):
+        plt.subplot(3, 3, n+1)
+        plt.imshow(img, cmap = 'gray')
+        plt.title(labels[n])
+
+plot_images(train_images_shuffle[:9], train_classes_shuffle[:9])
 
 ###################### DEFINE DATA GENERATOR ######################
 
