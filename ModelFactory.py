@@ -102,6 +102,9 @@ class ModelFactory:
             tf.keras.layers.Conv2D(filters=32, kernel_size=(7, 7), strides=2, padding="same", activation='relu'),
             tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
             tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            # FLATTEN
+            tf.keras.layers.Flatten(),
+            # DENSE LAYER 1
             tf.keras.layers.Dense(units=256, activation='relu'),
             tf.keras.layers.Dense(units = 3, activation = 'softmax')
         ])
