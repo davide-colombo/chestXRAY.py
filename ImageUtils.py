@@ -2,7 +2,7 @@
 import cv2              # OpenCV for images
 import numpy as np      # array reshape
 
-class ImageReader:
+class ImageUtils:
 
     GRAYSCALE = cv2.IMREAD_GRAYSCALE
     RGB       = cv2.IMREAD_COLOR

@@ -7,7 +7,7 @@ import os                               # operating system io
 from sklearn.model_selection import train_test_split
 
 from DatasetUtils import DatasetUtils
-from ImageReader import ImageReader
+from ImageUtils import ImageUtils
 from MyCustomMetrics import MyCustomMetrics
 from ModelFactory import ModelFactory
 
@@ -62,10 +62,10 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
 major_classes = 'bacteria'
 minor_classes = ['normal', 'virus']
 
-my_utils = DatasetUtils()
+my_data_utils = DatasetUtils()
 
 # TRAINING SET
-train_path, train_classes = my_utils.balance_dataset(X_train, major_classes, minor_classes)
+train_path, train_classes = my_data_utils.balance_dataset(X_train, major_classes, minor_classes)
 
 # len(train_path)
 # len(train_classes)
@@ -73,35 +73,43 @@ train_path, train_classes = my_utils.balance_dataset(X_train, major_classes, min
 
 ###################### READ ALL IMAGES ######################
 
-my_img_reader = ImageReader()
-train_images = my_img_reader.import_images_from_pathlist(train_path, color_flag = ImageReader.GRAYSCALE)
-train_images = my_img_reader.resize_array_of_images(train_images, d = (256, 256))
-train_images = my_img_reader.scale_array_of_images(train_images, scale_factor = 255)
-train_images = my_img_reader.reshape_array_of_images(train_images, (256, 256, 1))
+my_img_utils = ImageUtils()
+train_images = my_img_utils.import_images_from_pathlist(train_path, color_flag = ImageUtils.GRAYSCALE)
+train_images = my_img_utils.resize_array_of_images(train_images, d = (256, 256))
+train_images = my_img_utils.scale_array_of_images(train_images, scale_factor = 255)
+train_images = my_img_utils.reshape_array_of_images(train_images, (256, 256, 1))
 
 ###################### SHUFFLE TRAINING IMAGES ######################
 
-rnd = my_utils.shuffle_indices(list(range(0, len(train_images))))
+rnd = my_data_utils.shuffle_indices(list(range(0, len(train_images))))
 train_images_shuffle  = [train_images[i] for i in rnd]
 train_classes_shuffle = [train_classes[i] for i in rnd]
 
-# CONVERT INTO NPARRAY
-train_images_shuffle  = my_img_reader.convert_list_to_nparray(train_images_shuffle)
-train_classes_shuffle = my_img_reader.convert_list_to_nparray(train_classes_shuffle)
+###################### READ VALIDATION AND TEST IMAGES ######################
 
-###################### RESHAPE VALIDATION AND TEST IMAGES ######################
+validation_images = my_img_utils.get_preprocessed_images(X_val, ImageUtils.GRAYSCALE,
+                                                         d = (256, 256), s = 255, shape = (256, 256, 1))
 
-validation_images = my_img_reader.get_preprocessed_images(X_val, ImageReader.GRAYSCALE,
-                                                          d = (256, 256), s = 255, shape = (256, 256, 1))
+test_images = my_img_utils.get_preprocessed_images(X_test, ImageUtils.GRAYSCALE,
+                                                   d = (256, 256), s = 255, shape = (256, 256, 1))
 
-validation_images  = my_img_reader.convert_list_to_nparray(validation_images)
-validation_classes = my_img_reader.convert_list_to_nparray(y_val)
+###################### RESHAPE IMAGE ARRAY ######################
 
-test_images = my_img_reader.get_preprocessed_images(X_test, ImageReader.GRAYSCALE,
-                                                    d = (256, 256), s = 255, shape = (256, 256, 1))
+train_images       = my_img_utils.convert_list_to_nparray(train_images_shuffle)
+validation_images  = my_img_utils.convert_list_to_nparray(validation_images)
+test_images        = my_img_utils.convert_list_to_nparray(test_images)
 
-test_images  = my_img_reader.convert_list_to_nparray(test_images)
-test_classes = my_img_reader.convert_list_to_nparray(y_test)
+###################### CONVERT CLASS LABELS INTO NUMERIC ######################
+
+train_classes = my_data_utils.label_to_num(train_classes_shuffle)
+validation_classes = my_data_utils.label_to_num(y_val)
+test_classes = my_data_utils.label_to_num(y_test)
+
+###################### ONE-HOT ENCODE LABELS ######################
+
+train_one_hot = tf.keras.utils.to_categorical(train_classes, num_classes = 3)
+validation_one_hot = tf.keras.utils.to_categorical(validation_classes, num_classes = 3)
+test_one_hot = tf.keras.utils.to_categorical(test_classes, num_classes = 3)
 
 ###################### PLOT SOME IMAGES ######################
 
@@ -165,12 +173,11 @@ my_model = ModelFactory.make_model(custom_metrics)
 
 history = my_model.fit(
     train_images_shuffle,
-    validation_data  = (validation_images, y_val),
+    train_one_hot,
+    validation_data  = (validation_images, validation_one_hot),
     epochs           = epochs,
     batch_size       = train_batch,
     validation_batch_size = test_batch,
     verbose          = 1,
     callbacks        = [early_stopping, model_ckpt]
 )
-
-mnist_train, mnist_test = tf.keras.datasets.mnist.load_data()

@@ -4,6 +4,15 @@ import random
 
 class DatasetUtils:
 
+    LABEL_2_NUM = {'bacteria': 0, 'normal': 1, 'virus': 2}
+    NUM_2_LABEL = {0: 'bacteria', 1: 'normal', 2: 'virus'}
+
+    def label_to_num(self, labels):
+        return [self.LABEL_2_NUM[label] for label in labels]
+
+    def num_to_label(self, nums):
+        return [self.NUM_2_LABEL[num] for num in nums]
+
     def __get_patient_from_path(self, path_list):
         return [name.split('/')[-1].split('_')[0]
                 if name.split('/')[-1].startswith('person')
