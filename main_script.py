@@ -150,7 +150,7 @@ custom_metrics = [
 ###################### DEFINE CALLBACKS ######################
 
 early_stopping = tf.keras.callbacks.EarlyStopping(
-    monitor  = 'val_macro_f1_score',
+    monitor  = 'val_macro_f1score',
     verbose  = 1,
     patience = 10,
     mode     ='max',
@@ -159,7 +159,7 @@ early_stopping = tf.keras.callbacks.EarlyStopping(
 
 model_ckpt = tf.keras.callbacks.ModelCheckpoint(
     filepath = os.getcwd() + '/checkpoint/',
-    monitor  = 'val_macro_f1_score',
+    monitor  = 'val_macro_f1score',
     mode     = 'max',
     verbose  = 1,
     save_best_only = True

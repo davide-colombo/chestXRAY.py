@@ -86,18 +86,23 @@ class ModelFactory:
     def make_model(metrics, lr = 3e-4):
         # define the model
         model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=2, padding="same", activation='relu', input_shape=(256, 256, 1)),
-            tf.keras.layers.MaxPool2D(pool_size=3, strides=1, padding="same"),
-            tf.keras.layers.Conv2D(filters=128, kernel_size=(11, 11), strides=4, padding="same", activation='relu'),
-            tf.keras.layers.AveragePooling2D(pool_size=3, strides=1, padding="same"),
-            tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), strides=1, padding="same", activation='relu'),
-            tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), strides=1, padding="same", activation='relu'),
-            tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), strides=1, padding="same", activation='relu'),
-            tf.keras.layers.MaxPool2D(pool_size=3, strides=2, padding="same"),
-            tf.keras.layers.GlobalAveragePooling2D(),
-            # tf.keras.layers.Dense(units=512, activation='relu'),
-            # tf.keras.layers.Dense(units=256, activation='relu'),
-            # tf.keras.layers.Dense(units=64, activation='relu'),
+            # CONV BLOCK 1 (MISS L2 REG)
+            tf.keras.layers.Conv2D(filters = 32, kernel_size = (7, 7), strides = 2, padding = "same", activation = 'relu', input_shape = (256, 256, 1)),
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (1, 1), strides = 1, padding = 'same', activation = 'relu'),
+            tf.keras.layers.MaxPool2D(pool_size = 2, strides = 1, padding = "same"),
+            # CONV BLOCK 2 (MISS L2 REG)
+            tf.keras.layers.Conv2D(filters=32, kernel_size=(7, 7), strides=2, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            # CONV BLOCK 3 (MISS L2 REG)
+            tf.keras.layers.Conv2D(filters=32, kernel_size=(7, 7), strides=2, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            # CONV BLOCK 4 (MISS L2 REG)
+            tf.keras.layers.Conv2D(filters=32, kernel_size=(7, 7), strides=2, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            tf.keras.layers.Dense(units=256, activation='relu'),
             tf.keras.layers.Dense(units = 3, activation = 'softmax')
         ])
 
