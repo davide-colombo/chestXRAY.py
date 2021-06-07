@@ -87,15 +87,15 @@ class ModelFactory:
         # define the model
         model = tf.keras.Sequential([
             # CONV BLOCK 1 (MISS L2 REG)
-            tf.keras.layers.Conv2D(filters = 32, kernel_size = (7, 7), strides = 2, padding = "same", activation = 'relu', input_shape = (256, 256, 1)),
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (7, 7), strides = 2, padding = "same", activation = 'relu', input_shape = (256, 256, 1)),
             tf.keras.layers.Conv2D(filters = 64, kernel_size = (1, 1), strides = 1, padding = 'same', activation = 'relu'),
             tf.keras.layers.MaxPool2D(pool_size = 2, strides = 1, padding = "same"),
             # CONV BLOCK 2 (MISS L2 REG)
-            tf.keras.layers.Conv2D(filters=32, kernel_size=(7, 7), strides=2, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", activation='relu'),
             tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
             tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
             # CONV BLOCK 3 (MISS L2 REG)
-            tf.keras.layers.Conv2D(filters=32, kernel_size=(7, 7), strides=2, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", activation='relu'),
             tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
             tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
             # CONV BLOCK 4 (MISS L2 REG)

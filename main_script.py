@@ -50,7 +50,7 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
                                                     stratify = y_train,
                                                     random_state = 1234)
 
-# len([name for name in y_train if name == 'bacteria'])
+# len([name for name in y_train if name == 'virus'])
 # len([name for name in y_test if name == 'bacteria'])
 
 # len([path for path in X_train for test in X_test if path == test])
@@ -59,17 +59,17 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
 
 ###################### CREATE A BALANCED VERSION OF THE TRAINING SET ######################
 
-major_classes = 'bacteria'
+major_class = 'bacteria'
 minor_classes = ['normal', 'virus']
 
 my_data_utils = DatasetUtils()
 
 # TRAINING SET
-train_path, train_classes = my_data_utils.balance_dataset(X_train, major_classes, minor_classes)
+train_path, train_classes = my_data_utils.balance_dataset(X_train, major_class, minor_classes)
 
 # len(train_path)
 # len(train_classes)
-# len([name for name in train_classes if name == 'bacteria'])
+# len([name for name in train_classes if name == 'normal'])
 
 ###################### READ ALL IMAGES ######################
 

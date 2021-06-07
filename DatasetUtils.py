@@ -69,16 +69,14 @@ class DatasetUtils:
     # major_classes: list of strings
     # minor_classes: list of strings
     # path_list: list of path to file
-    def balance_dataset(self, path_list, major_classes, minor_classes):
+    def balance_dataset(self, path_list, major_class, minor_classes):
         df = self.__create_dataframe(path_list)
-        gb = df.groupby(['class', 'patient'])
-        major_in, major_out = self.__undersample_class_gb_patient(gb, class_name = major_classes)
-        final_major = list(df['path'].iloc[major_in])
+        major_class = df.loc[df['class'] == major_class]['path']
         class_count = self.__get_n_class_examples(df, minor_classes)
-        n_extra = [len(final_major) - c for c in class_count]
+        n_extra = [len(major_class) - c for c in class_count]
         minor_list_path = self.__minor_class_oversampling(df, minor_classes, n_extra)
-        all_path = self.__contat_path(final_major, minor_list_path)
-        all_classes = self.__concat_classes('bacteria', len(final_major), minor_classes, [len(minor_list_path[0]), len(minor_list_path[1])])
+        all_path = self.__contat_path(major_class, minor_list_path)
+        all_classes = self.__concat_classes('bacteria', len(major_class), minor_classes, [len(minor_list_path[0]), len(minor_list_path[1])])
         return all_path, all_classes
 
     def __get_n_class_examples(self, df, minor_classes):
@@ -91,23 +89,17 @@ class DatasetUtils:
         path = []
         for i in range(0, len(minor_classes)):
             tmp = df.loc[df['class'] == minor_classes[i]]['path']
-            if minor_classes[i] == 'normal':
-                rnd = random.sample(list(tmp.index), n_extra[i])
-            else:
-                gb = df.groupby(['class', 'patient'])
-                single_patient = self.__oversample_class_gb_patient(gb, minor_classes[i])
-                rnd = random.sample(single_patient, n_extra[i])
+            rnd = random.choices(list(tmp.index), k = n_extra[i])        # sampling with replacement
             # extra + tot
             extra = list(df['path'].iloc[rnd])
             tmp = list(tmp)
             tmp.extend(extra)
             path.append(tmp)
-
         return path
 
     # concatenate all major classes and all minor classes on after another
     def __contat_path(self, major_path, minor_path):
-        tmp = major_path.copy()
+        tmp = list(major_path).copy()
         for i in range(0, len(minor_path)):
             tmp.extend(minor_path[i])
         return tmp
