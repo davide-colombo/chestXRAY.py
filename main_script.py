@@ -62,10 +62,10 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
 major_class = 'bacteria'
 minor_classes = ['normal', 'virus']
 
-my_data_utils = DatasetUtils()
+my_data_utils = DatasetUtils(path_separator='/', major_class= major_class, minor_class=minor_classes)
 
 # TRAINING SET
-train_path, train_classes = my_data_utils.balance_dataset(X_train, major_class, minor_classes)
+train_path, train_classes = my_data_utils.random_oversampling(X_train, major_class, minor_classes)
 
 # len(train_path)
 # len(train_classes)
