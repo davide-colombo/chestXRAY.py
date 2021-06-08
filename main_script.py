@@ -172,7 +172,7 @@ my_model = ModelFactory.make_model(custom_metrics)
 ###################### TRAIN THE MODEL ######################
 
 history = my_model.fit(
-    train_images_shuffle,
+    train_images,
     train_one_hot,
     validation_data  = (validation_images, validation_one_hot),
     epochs           = epochs,
