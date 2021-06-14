@@ -21,7 +21,7 @@ class ImageUtils:
             images = self.__resize_images(images, new_dim)
         if scaling:
             images = self.__scale_images(images, scale_factor = scale_factor)
-            CheckUtils.check_range(images, lower_bound=0.0, upper_bound=1.0)
+            CheckUtils.check_nparray_range(images, lower_bound=0.0, upper_bound=1.0)
         if reshaping:
             images = self.__reshape_images(images, new_shape)
             CheckUtils.check_shape(images, target_shape=new_shape)

@@ -26,12 +26,24 @@ class CheckUtils:
                 raise Exception('{} is the current shape. {} is the target shape'.format(img.shape, target_shape))
 
     @staticmethod
-    def check_range(images, lower_bound: float = 0.0, upper_bound: float = 1.0):
+    def check_nparray_range(images, lower_bound: float = 0.0, upper_bound: float = 1.0):
         for img in images:
             if np.amin(img) < lower_bound or np.amax(img) > upper_bound:
-                raise Exception('{:f.3} is the current min value. {:f.3} is the lower bound;\n'
-                                '{:f.3} is the current max value. {:f.3} is the upper bound'.format(np.amin(img), lower_bound,
+                raise Exception('{:.3f} is the current min value. {:.3f} is the lower bound;\n'
+                                '{:.3f} is the current max value. {:.3f} is the upper bound'.format(np.amin(img), lower_bound,
                                                                                                     np.amax(img), upper_bound))
 
+    @staticmethod
+    def check_float_range(values, lower_bound: float = 0.0, upper_bound: float = 1.0):
+        for v in values:
+            if v < lower_bound or v > upper_bound:
+                raise Exception('{:.3f} is the current value. '
+                                '{:.3f} is the lower bound and {:.3f} is the upper bound'.format(v,
+                                                                                                 lower_bound,
+                                                                                                 upper_bound))
 
-
+    @staticmethod
+    def check_gt_threshold(values, threshold: float = 0.0):
+        for v in values:
+            if v < threshold:
+                raise Exception('{} is the current value. {} is the threshold'.format(v, threshold))
