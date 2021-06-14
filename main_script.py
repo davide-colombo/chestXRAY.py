@@ -46,14 +46,9 @@ virus_images    = my_img_utils.import_class_images(virus_files)
 ###################### COMPUTE MEAN AND VARIANCE FOR EACH IMAGE ######################
 
 my_stat_utils = StatUtils()
-bacteria_mean = my_stat_utils.samplewise_mean(bacteria_images)
-bacteria_var  = my_stat_utils.samplewise_var(bacteria_images)
-
-normal_mean = my_stat_utils.samplewise_mean(normal_images)
-normal_var  = my_stat_utils.samplewise_var(normal_images)
-
-virus_mean  = my_stat_utils.samplewise_mean(virus_images)
-virus_var   = my_stat_utils.samplewise_var(virus_images)
+bacteria_mean, bacteria_var = my_stat_utils.get_mean_var(bacteria_images)
+normal_mean, normal_var = my_stat_utils.get_mean_var(normal_images)
+virus_mean, virus_var  = my_stat_utils.get_mean_var(virus_images)
 
 ###################### CREATE A STATS DATAFRAME ######################
 # dict(alpha = 0.5, bins = 100, density = True, stacked = True)     # kwargs for matplotlib.pyplot
