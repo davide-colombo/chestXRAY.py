@@ -1,6 +1,7 @@
 
 import cv2              # OpenCV for images
 import numpy as np      # array reshape
+from CheckUtils import CheckUtils
 
 class ImageUtils:
 
@@ -15,12 +16,15 @@ class ImageUtils:
                             list2nparray = False):
 
         images = self.__read_images(filepath, color_flag)
+        CheckUtils.check_len(len(images), len(filepath))
         if resizing:
             images = self.__resize_images(images, new_dim)
         if scaling:
             images = self.__scale_images(images, scale_factor = scale_factor)
+            CheckUtils.check_range(images, lower_bound=0.0, upper_bound=1.0)
         if reshaping:
             images = self.__reshape_images(images, new_shape)
+            CheckUtils.check_shape(images, target_shape=new_shape)
         if list2nparray:
             images = self.__list2nparray(images)
         return images
@@ -47,11 +51,3 @@ class ImageUtils:
 
     def __list2nparray(self, images):
         return np.array(images)
-
-# =============================================================================
-
-#           CHECK METHODS
-
-# =============================================================================
-
-

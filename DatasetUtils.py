@@ -3,10 +3,10 @@
 
 # @Description: a class for coping with dataset
 
+from CheckUtils import CheckUtils
 import pandas as pd
 import random
 import os
-
 
 class DatasetUtils:
     LABEL_2_NUM = {'bacteria': 0, 'normal': 1, 'virus': 2}
@@ -28,13 +28,13 @@ class DatasetUtils:
                      for root, dirs, files in os.walk(dataset_folder_path)
                      for file in files
                      if not file.startswith('.')]
-        self.__check_len(len(all_files), 5856)
+        CheckUtils.check_len(len(all_files), 5856)
         return all_files
 
     def get_filepath_from_classname(self, files, class_name):
         tmp = [f for f in files if class_name in f]
-        self.__check_len(current_len=len(tmp), target_len=self.CLASS_COUNT.get(class_name))
-        self.__check_file_consistency(tmp, wrong_classes= [k for k in self.CLASS_COUNT.keys() if k != class_name])
+        CheckUtils.check_len(current_len=len(tmp), target_len=self.CLASS_COUNT.get(class_name))
+        CheckUtils.check_file_consistency(tmp, wrong_classes= [k for k in self.CLASS_COUNT.keys() if k != class_name])
         return tmp
 
     # major_class: string, the major class name
@@ -81,9 +81,9 @@ class DatasetUtils:
                        if 'virus' in name
                        else 'normal'
                        for name in all_names]
-        self.__check_classes(class_names, 'bacteria', 2780)
-        self.__check_classes(class_names, 'virus', 1493)
-        self.__check_classes(class_names, 'normal', 1583)
+        CheckUtils.check_classes(class_names, 'bacteria', 2780)
+        CheckUtils.check_classes(class_names, 'virus', 1493)
+        CheckUtils.check_classes(class_names, 'normal', 1583)
         return class_names
 
     # =============================================================================
@@ -123,23 +123,4 @@ class DatasetUtils:
 
     def shuffle_indices(self, indices):
         return random.sample(indices, len(indices))
-
-# =============================================================================
-
-#           CHECK METHODS
-
-# =============================================================================
-
-    def __check_len(self, current_len, target_len):
-        if current_len != target_len:
-            raise Exception('{} is the current length. {} is the target length'.format(current_len, target_len))
-
-    def __check_classes(self, class_names, target_class, target_len):
-        names = [name for name in class_names if name == target_class]
-        self.__check_len(len(names), target_len)
-
-    def __check_file_consistency(self, files, wrong_classes):
-        for c in wrong_classes:
-            intersection = [f for f in files if c in f]
-            self.__check_len(current_len=len(intersection), target_len=0)
 
