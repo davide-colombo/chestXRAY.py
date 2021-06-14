@@ -46,33 +46,35 @@ virus_images    = my_img_utils.import_class_images(virus_files)
 ###################### COMPUTE MEAN AND VARIANCE FOR EACH IMAGE ######################
 
 my_stat_utils = StatUtils()
-bacteria_mean, bacteria_var = my_stat_utils.get_mean_var(bacteria_images)
-normal_mean, normal_var = my_stat_utils.get_mean_var(normal_images)
-virus_mean, virus_var  = my_stat_utils.get_mean_var(virus_images)
+bacteria_mean, bacteria_var, bacteria_inv_var = my_stat_utils.get_all_stats(bacteria_images)
+normal_mean, normal_var, normal_inv_var       = my_stat_utils.get_all_stats(normal_images)
+virus_mean, virus_var, virus_inv_var          = my_stat_utils.get_all_stats(virus_images)
 
-###################### CREATE A STATS DATAFRAME ######################
-# dict(alpha = 0.5, bins = 100, density = True, stacked = True)     # kwargs for matplotlib.pyplot
+###################### PLOT HISTOGRAM AND DENSITY DISTRIBUTION ######################
 
 my_plot_utils = PlotUtils()
+
 kwargs = dict(hist_kws = {'alpha': .6}, kde_kws = {'linewidth': 2})
-my_plot_utils.plot_class_histogram(bacteria_mean, normal_mean, virus_mean, **kwargs)
+my_plot_utils.plot_class_histogram(class_stats = [bacteria_mean, normal_mean, virus_mean],
+                                   xlim  = (0, 1),
+                                   title = 'Histogram and Density distribution of mean values',
+                                   ylabel = 'Density',
+                                   xlabel = 'Mean',
+                                   **kwargs)
 
-my_plot_utils.plot_class_histogram(bacteria_var, normal_var, virus_var, **kwargs)
+my_plot_utils.plot_class_histogram(class_stats = [bacteria_var, normal_var, virus_var],
+                                   xlim  = (0, 0.1),
+                                   title = 'Histogram and Density distribution of variance values',
+                                   ylabel = 'Density',
+                                   xlabel = 'Variance',
+                                   **kwargs)
 
-bacteria_inv_var = [1/n for n in bacteria_var]
-normal_inv_var = [1/n for n in normal_var]
-virus_inv_var = [1/n for n in virus_var]
-my_plot_utils.plot_class_histogram(bacteria_inv_var, normal_inv_var, virus_inv_var, **kwargs)
-
-# major_class = 'bacteria'
-# minor_classes = ['normal', 'virus']
-# my_data_utils = DatasetUtils(path_separator='/', major_class= major_class, minor_class=minor_classes)
-#
-# stat_dict = {'b_mean': bacteria_mean, 'b_var': bacteria_var,
-#              'n_mean': normal_mean,   'n_var': normal_var,
-#              'v_mean': virus_mean,    'v_var': virus_var}
-#
-# stat_df = my_data_utils.dict_to_dataframe(stat_dict)
+my_plot_utils.plot_class_histogram(class_stats = [bacteria_inv_var, normal_inv_var, virus_inv_var],
+                                   xlim  = (0, 250),
+                                   title = 'Histogram and Density distribution of inverse of the variance values',
+                                   ylabel = 'Density',
+                                   xlabel = 'Inverse of the Variance',
+                                   **kwargs)
 
 ###################### TRAIN AND VALIDATION SPLIT ######################
 

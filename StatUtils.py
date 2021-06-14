@@ -14,6 +14,11 @@ class StatUtils:
         CheckUtils.check_gt_threshold(variance, threshold=0.0)
         return variance
 
-    def get_mean_var(self, images):
-        return self.samplewise_mean(images), self.samplewise_var(images)
+    def samplewise_inverse_var(self, images):
+        return [1/var for var in self.samplewise_var(images)]
+
+    def get_all_stats(self, images):
+        return self.samplewise_mean(images), \
+               self.samplewise_var(images), \
+               self.samplewise_inverse_var(images)
 
