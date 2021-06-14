@@ -1,9 +1,8 @@
 
 ###################### IMPORTING LIBRARIES ######################
 
-import tensorflow as tf                 # deep learning
-import matplotlib.pyplot as plt         # plot
-from sklearn.model_selection import train_test_split
+import tensorflow as tf
+import matplotlib.pyplot as plt
 
 from DatasetUtils import DatasetUtils
 from ImageUtils import ImageUtils
@@ -17,24 +16,17 @@ tf.random.set_seed(1234)
 
 ###################### LIST ALL FILES IN THE DATASET DIRECTORY ######################
 
-major_class   = 'bacteria'
-minor_classes = ['normal', 'virus']
-my_data_utils = DatasetUtils(major_class = major_class, minor_class = minor_classes)
+my_data_utils = DatasetUtils()
 
-root_dir_path = '/Users/davidecolombo/Desktop/dataset'
-dataset_dir   = '/chest_xray_final'
-
-all_files = my_data_utils.list_files_from_directory(root_dir_path + dataset_dir)
-
-###################### EXTRACT CLASS NAMES ######################
-
-class_name = my_data_utils.get_classname_from_path(all_files, path_separator = '/')
+path2root = '/Users/davidecolombo/Desktop/dataset/chest_xray_final'
+all_files = my_data_utils.list_files_from_directory(path2root)
+class_name = my_data_utils.filepath2class(all_files)
 
 ###################### GET CLASS FILE PATH ######################
 
-bacteria_files = my_data_utils.get_filepath_from_classname(all_files, 'bacteria')
-normal_files   = my_data_utils.get_filepath_from_classname(all_files, 'normal')
-virus_files    = my_data_utils.get_filepath_from_classname(all_files, 'virus')
+bacteria_files = my_data_utils.class2filepath(all_files, 'bacteria')
+normal_files   = my_data_utils.class2filepath(all_files, 'normal')
+virus_files    = my_data_utils.class2filepath(all_files, 'virus')
 
 ###################### IMPORT CLASS IMAGES ######################
 
@@ -78,46 +70,20 @@ my_plot_utils.plot_class_histogram(class_stats = [bacteria_inv_var, normal_inv_v
 
 ###################### TRAIN AND VALIDATION SPLIT ######################
 
-X_train, X_val, y_train, y_val = train_test_split(all_files, class_name,
-                                                  test_size = 0.2,
-                                                  stratify = class_name,
-                                                  random_state = 1234)
-
-# len([name for name in y_train if name == 'normal'])
-# len([name for name in y_val if name == 'virus'])
-
-###################### TRAIN AND TEST SPLIT ######################
-
-X_train, X_test, y_train, y_test = train_test_split(X_train, y_train,
-                                                    test_size = 0.2,
-                                                    stratify = y_train,
-                                                    random_state = 1234)
-
-len([name for name in y_train if name == 'bacteria'])
-len([name for name in y_test if name == 'bacteria'])
-
-len([path for path in X_train for test in X_test if path == test])
-len([path for path in X_train for val in X_val if path == val])
-len([path for path in X_test for val in X_val if path == val])
+train_files, train_classes, val_files, val_classes = my_data_utils.training_validation_split(all_files, class_name,
+                                                                                             val_size=0.2)
+train_files, train_classes, test_files, test_classes = my_data_utils.training_test_split(train_files, train_classes,
+                                                                                         test_size=0.2)
 
 ###################### CREATE A BALANCED VERSION OF THE TRAINING SET ######################
 
-major_class = 'bacteria'
-minor_classes = ['normal', 'virus']
-
-my_data_utils = DatasetUtils(path_separator='/', major_class= major_class, minor_class=minor_classes)
-
 # TRAINING SET
-train_path, train_classes = my_data_utils.random_oversampling(X_train, major_class, minor_classes)
-
-len(train_path)
-len(train_classes)
-len([name for name in train_classes if name == 'bacteria'])
+train_files, train_classes = my_data_utils.random_oversampling(train_files)
 
 ###################### READ ALL IMAGES ######################
 
 my_img_utils = ImageUtils()
-train_images = my_img_utils.__import_images(train_path, color_flag = ImageUtils.GRAYSCALE)
+train_images = my_img_utils.__import_images(train_files, color_flag = ImageUtils.GRAYSCALE)
 train_images = my_img_utils.__resize_images(train_images, d = (256, 256))
 train_images = my_img_utils.__scale_images(train_images, scale_factor = 255)
 train_images = my_img_utils.__reshape_images(train_images, (256, 256, 1))
