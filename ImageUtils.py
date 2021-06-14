@@ -22,6 +22,13 @@ class ImageUtils:
     def convert_list_to_nparray(self, l):
         return np.array(l)
 
+    def export_images(self, images, save_dir, save_prefix):
+        i = 0
+        for image in images:
+            filepath = save_dir + save_prefix + str(i) + '.jpeg'
+            cv2.imwrite(filepath, img=image)
+            i += 1
+
     def get_preprocessed_images(self, pathlist, color_flag, d, s, shape):
         array = self.import_images_from_pathlist(pathlist, color_flag)
         array = self.resize_array_of_images(array, d)
@@ -29,3 +36,12 @@ class ImageUtils:
         array = self.reshape_array_of_images(array, shape)
         array = self.convert_list_to_nparray(array)
         return array
+
+    def per_class_import(self, filepath, color_flag, s):
+        images = self.import_images_from_pathlist(filepath, color_flag)
+        images = self.scale_array_of_images(images, scale_factor = s)
+        return images
+
+
+
+

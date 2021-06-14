@@ -1,6 +1,11 @@
+# @Author: Davide Colombo
+# @Date: 2021, 14th June
+
+# @Description: a class for coping with dataset
 
 import pandas as pd
 import random
+import os
 
 class DatasetUtils:
 
@@ -18,11 +23,17 @@ class DatasetUtils:
     def num_to_label(self, nums):
         return [self.NUM_2_LABEL[num] for num in nums]
 
-    # major_classes: list of strings
-    # minor_classes: list of strings
-    # path_list: list of path to file
-    def random_oversampling(self, path_list, major_class, minor_classes):
-        df = self.__create_dataframe(path_list)
+    def list_files_from_directory(self, dataset_folder_path):
+        return [os.path.join(root, file)
+                for root, dirs, files in os.walk(dataset_folder_path)
+                for file in files
+                if not file.startswith('.')]
+
+    # major_class: string, the major class name
+    # minor_classes: list of strings, the minor classes name
+    # path_list: list of strings, the complete path to a file
+    def random_oversampling(self, file_path, major_class, minor_classes):
+        df = self.__create_dataframe(file_path)
         major_list_path = self.__get_filepath_from_classname(df, major_class)
         class_count = self.__get_class_count(df, minor_classes)
         n_extra = [len(major_list_path) - c for c in class_count]
@@ -32,20 +43,29 @@ class DatasetUtils:
                                                  minor_classes, [len(minor_list_path[0]), len(minor_list_path[1])])
         return all_path, all_classes
 
+    def get_multiclass_indices(self, y, class_list):
+        tmp = []
+        for i in range(0, len(class_list)):
+            tmp.append(self.__get_class_indices(y, class_list[i]))
+        return tmp
+
+    def __get_class_indices(self, y, class_name):
+        return [i for i, x in enumerate(y) if x == class_name]
+
 # =============================================================================
 
     def __create_dataframe(self, file_path):
-        classes = self.__get_class_from_path(file_path)
+        classes = self.get_classname_from_path(file_path)
         d = {'file_path': file_path, 'class': classes}
-        return self.__dict_to_dataframe(d)
+        return self.dict_to_dataframe(d)
 
-    def __dict_to_dataframe(self, dictionary):
+    def dict_to_dataframe(self, dictionary):
         return pd.DataFrame(
             dictionary,
             columns = list(dictionary.keys())
         )
 
-    def __get_class_from_path(self, file_path):
+    def get_classname_from_path(self, file_path):
         all_names = [name.split(self.path_separator)[-1] for name in file_path]
         return ['bacteria'
                 if 'bacteria' in name
@@ -60,10 +80,8 @@ class DatasetUtils:
         return df.loc[df['class'] == class_name]['file_path']
 
     def __get_class_count(self, df, minor_classes):
-        count = []
-        for c in minor_classes:
-            count.append(df.groupby('class')['file_path'].count().loc[c])
-        return count
+        gb = df.groupby('class')['file_path'].count()
+        return [gb.loc[c] for c in minor_classes]
 
     def __oversample_minor_class(self, df, minor_classes, n_extra):
         path = []
@@ -72,7 +90,7 @@ class DatasetUtils:
             rnd = random.choices(list(tmp.index), k = n_extra[i])        # sampling with replacement
             # extra + tot
             extra = list(df['file_path'].iloc[rnd])
-            tmp = list(tmp)
+            tmp   = list(tmp)
             tmp.extend(extra)
             path.append(tmp)
         return path

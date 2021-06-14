@@ -41,6 +41,23 @@ class MyCustomMetrics:
         true_pos = tf.linalg.diag_part(cm)
         return tf.subtract(tf.reduce_sum(cm, axis=1), true_pos)
 
+    def __macro_true_neg(self, y_true, y_pred):
+        cm    = self.__categorical_confusion_mat(y_true, y_pred)
+        total = tf.multiply(tf.ones(shape = (3, ), dtype = tf.int32), tf.reduce_sum(cm))
+        fp = self.__macro_false_pos(y_true, y_pred)
+        fn = self.__macro_false_neg(y_true, y_pred)
+        tp = self.__macro_true_pos(y_true, y_pred)
+        tn = tf.subtract(total, fp)
+        tn = tf.subtract(tn, fn)
+        return tf.subtract(tn, tp)
+
+    def __categorical_specificity(self, y_true, y_pred):
+        tn = tf.cast(self.__macro_true_neg(y_true, y_pred), tf.float32)
+        fp = tf.cast(self.__macro_false_pos(y_true, y_pred), tf.float32)
+        den = tf.add(tn, fp)
+        den = tf.add(den, 1e-7)
+        return tf.divide(tn, den)
+
 ###################### CLASS FALSE POSITIVES ######################
 
     def false_neg_bacteria(self, y_true, y_pred):
@@ -85,31 +102,45 @@ class MyCustomMetrics:
 
 ###################### CLASS RECALL ######################
 
-    def macro_virus_recall(self, y_true, y_pred):
+    def virus_recall(self, y_true, y_pred):
         class_recall = tf.cast(self.__categorical_macro_recall(y_true, y_pred), tf.float32)
         return tf.reduce_sum(tf.multiply(class_recall, tf.constant([0, 0, 1], dtype = tf.float32)))
 
-    def macro_normal_recall(self, y_true, y_pred):
+    def normal_recall(self, y_true, y_pred):
         class_recall = tf.cast(self.__categorical_macro_recall(y_true, y_pred), tf.float32)
         return tf.reduce_sum(tf.multiply(class_recall, tf.constant([0, 1, 0], dtype=tf.float32)))
 
-    def macro_bacteria_recall(self, y_true, y_pred):
+    def bacteria_recall(self, y_true, y_pred):
         class_recall = tf.cast(self.__categorical_macro_recall(y_true, y_pred), tf.float32)
         return tf.reduce_sum(tf.multiply(class_recall, tf.constant([1, 0, 0], dtype=tf.float32)))
 
 ###################### CLASS PRECISION ######################
 
-    def macro_virus_precision(self, y_true, y_pred):
+    def virus_precision(self, y_true, y_pred):
         class_precision = tf.cast(self.__categorical_macro_precision(y_true, y_pred), tf.float32)
         return tf.reduce_sum(tf.multiply(class_precision, tf.constant([0, 0, 1], dtype=tf.float32)))
 
-    def macro_normal_precision(self, y_true, y_pred):
+    def normal_precision(self, y_true, y_pred):
         class_precision = tf.cast(self.__categorical_macro_precision(y_true, y_pred), tf.float32)
         return tf.reduce_sum(tf.multiply(class_precision, tf.constant([0, 1, 0], dtype=tf.float32)))
 
-    def macro_bacteria_precision(self, y_true, y_pred):
+    def bacteria_precision(self, y_true, y_pred):
         class_precision = tf.cast(self.__categorical_macro_precision(y_true, y_pred), tf.float32)
         return tf.reduce_sum(tf.multiply(class_precision, tf.constant([1, 0, 0], dtype = tf.float32)))
+
+###################### CLASS PRECISION ######################
+
+    def bacteria_spec(self, y_true, y_pred):
+        spec = tf.cast(self.__categorical_specificity(y_true, y_pred), tf.float32)
+        return tf.reduce_sum(tf.multiply(spec, tf.constant([1, 0, 0], dtype = tf.float32)))
+
+    def normal_spec(self, y_true, y_pred):
+        spec = tf.cast(self.__categorical_specificity(y_true, y_pred), tf.float32)
+        return tf.reduce_sum(tf.multiply(spec, tf.constant([0, 1, 0], dtype = tf.float32)))
+
+    def virus_spec(self, y_true, y_pred):
+        spec = tf.cast(self.__categorical_specificity(y_true, y_pred), tf.float32)
+        return tf.reduce_sum(tf.multiply(spec, tf.constant([0, 0, 1], dtype = tf.float32)))
 
 ###################### MACRO-AVERAGED METRICS ######################
 
@@ -131,6 +162,10 @@ class MyCustomMetrics:
         f1score = tf.divide(num, den)
         return tf.reduce_mean(f1score)
 
+    def macro_specificity(self, y_true, y_pred):
+        spec = self.__categorical_specificity(y_true, y_pred)
+        return tf.reduce_mean(spec)
+
     # @Source: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html
     def balanced_accuracy(self, y_true, y_pred):
         cm       = self.__categorical_confusion_mat(y_true, y_pred)
@@ -147,8 +182,8 @@ class MyCustomMetrics:
 # my_custom_metrics = MyCustomMetrics()
 #
 # # CHECK
-# my_custom_metrics.macro_weighted_f1score(y_true = [[0, 1, 0],       [0, 1, 0],       [0, 0, 1],       [1, 0, 0], [0, 0, 1]],
-#                                          y_pred = [[0.1, 0.8, 0.1], [0.2, 0.7, 0.1], [0.4, 0.3, 0.3], [0, 1, 0], [0, 0, 1]])
+# my_custom_metrics.virus_spec(y_true = [[0, 1, 0],       [0, 1, 0],       [0, 0, 1],       [1, 0, 0], [0, 0, 1]],
+#                              y_pred = [[0.1, 0.8, 0.1], [0.2, 0.7, 0.1], [0.4, 0.3, 0.3], [0, 1, 0], [0, 0, 1]])
 #
 # f1_score(y_true = [1, 1, 2, 0, 2],
 #          y_pred = [1, 1, 0, 1, 2],
@@ -168,26 +203,19 @@ class MyCustomMetrics:
 #              y_pred = [1, 1, 0, 1, 2],
 #              average = 'macro')
 
-
-# no good for class imbalance!!!
-# accuracy_score(y_true = [1, 1, 2, 0, 2],
-#                y_pred = [1, 1, 0, 1, 2],
-#                normalize=True)
-
 # def __get_class_weight(self, y_true, y_pred):
-    #     cm     = self.__categorical_confusion_mat(y_true, y_pred)
-    #     actual = tf.reduce_sum(cm, axis=1)
-    #     total  = tf.reduce_sum(actual)
-    #     return tf.divide(actual, total)
+#         cm     = self.__categorical_confusion_mat(y_true, y_pred)
+#         actual = tf.reduce_sum(cm, axis=1)
+#         total  = tf.reduce_sum(actual)
+#         return tf.divide(actual, total)
 
-# @Source: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html#sklearn.metrics.accuracy_score
-    # def macro_weighted_accuracy(self, y_true, y_pred):
-    #     cm       = self.__categorical_confusion_mat(y_true, y_pred)
-    #     weight   = tf.cast(self.__get_class_weight(y_true, y_pred), tf.float32)
-    #     actual   = tf.cast(tf.reduce_sum(cm, axis = 1), tf.float32)
-    #     correct  = tf.cast(tf.linalg.diag_part(cm), tf.float32)
-    #     accuracy = tf.divide(correct, tf.add(actual, 1e-7))
-    #     return tf.reduce_sum(tf.multiply(accuracy, weight))
+# def macro_weighted_accuracy(self, y_true, y_pred):
+#     cm       = self.__categorical_confusion_mat(y_true, y_pred)
+#     weight   = tf.cast(self.__get_class_weight(y_true, y_pred), tf.float32)
+#     actual   = tf.cast(tf.reduce_sum(cm, axis = 1), tf.float32)
+#     correct  = tf.cast(tf.linalg.diag_part(cm), tf.float32)
+#     accuracy = tf.divide(correct, tf.add(actual, 1e-7))
+#     return tf.reduce_sum(tf.multiply(accuracy, weight))
 
 # class_weight    = tf.cast(self.__get_class_weight(y_true, y_pred), tf.float32)
 

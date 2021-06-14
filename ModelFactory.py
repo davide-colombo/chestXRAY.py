@@ -50,6 +50,7 @@ class ModelFactory:
 
         return model
 
+# =============================================================================
     @staticmethod
     def make_xception(metrics, learning_rate, shape):
 
@@ -80,8 +81,7 @@ class ModelFactory:
 
         return model
 
-
-# MAKE MODEL FROM SCRATCH
+# =============================================================================
     @staticmethod
     def make_model(metrics, lr = 3e-4):
         # define the model
@@ -99,9 +99,9 @@ class ModelFactory:
             tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
             tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
             # CONV BLOCK 4 (MISS L2 REG)
-            tf.keras.layers.Conv2D(filters=32, kernel_size=(7, 7), strides=2, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=1, padding="same", activation='relu'),
             tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
-            tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding="same"),
             # FLATTEN
             tf.keras.layers.Flatten(),
             # DENSE LAYER 1
@@ -121,5 +121,137 @@ class ModelFactory:
 
         return model
 
+# =============================================================================
+# with max norm constraints it is possible to increase the learning rate
+    @staticmethod
+    def make_model_with_MaxNorm_constraints(metrics, lr = 3e-3, max_value = 2):
 
+        # define max norm constraints
+        my_kernel_constraints = tf.keras.constraints.MaxNorm(max_value = max_value, axis = [0, 1, 2])
 
+        # define the model
+        model = tf.keras.Sequential([
+            # CONV BLOCK 1
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (7, 7), strides = 2, padding = "same", activation = 'relu', kernel_constraint = my_kernel_constraints, input_shape = (256, 256, 1)),
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (1, 1), strides = 1, padding = 'same', activation = 'relu'),
+            tf.keras.layers.MaxPool2D(pool_size = 2, strides = 1, padding = "same"),
+            # CONV BLOCK 2
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", activation='relu', kernel_constraint = my_kernel_constraints),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            # CONV BLOCK 3
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", activation='relu', kernel_constraint = my_kernel_constraints),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            # CONV BLOCK 4
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=1, padding="same", activation='relu', kernel_constraint = my_kernel_constraints),
+            # SPATIAL DROPOUT
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            # SPATIAL DROPOUT
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding="same"),
+            # FLATTEN
+            tf.keras.layers.Flatten(),
+            # DENSE LAYER 1
+            tf.keras.layers.Dense(units=256, activation='relu'),
+            tf.keras.layers.Dense(units = 3, activation = 'softmax')
+        ])
+
+        # view summary
+        model.summary()
+
+        # compile
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+            loss=tf.keras.losses.CategoricalCrossentropy(),
+            metrics=metrics
+        )
+
+        return model
+
+# =============================================================================
+    @staticmethod
+    def make_model_with_batch_norm(metrics, lr = 3e-3):
+
+        # define the model
+        model = tf.keras.Sequential([
+            # CONV BLOCK 1 INPUT: 256X256
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(7, 7), strides=2, padding="same", activation='relu', input_shape=(256, 256, 1)),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            tf.keras.layers.BatchNormalization(),
+            # CONV BLOCK 2 INPUT: 128X128
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            tf.keras.layers.BatchNormalization(),
+            # CONV BLOCK 3 INPUT: 64X64
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+            tf.keras.layers.BatchNormalization(),
+            # CONV BLOCK 4 INPUT: 32X32
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=1, padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation='relu'),
+            tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding="same"),
+            tf.keras.layers.BatchNormalization(),
+            # FLATTEN
+            tf.keras.layers.Flatten(),
+            # DENSE LAYER 1
+            tf.keras.layers.Dense(units=256, activation='relu'),
+            tf.keras.layers.Dense(units=3, activation='softmax')
+        ])
+
+        # view summary
+        model.summary()
+
+        # compile
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+            loss=tf.keras.losses.CategoricalCrossentropy(),
+            metrics=metrics
+        )
+
+        return model
+
+# =============================================================================
+
+# define the model
+    model = tf.keras.Sequential([
+        # CONV BLOCK 1
+        tf.keras.layers.Conv2D(filters=64, kernel_size=(7, 7), strides=2, padding="same", kernel_constraint = tf.keras.constraints.MaxNorm(max_value = 4, axis = [0, 1, 2]), input_shape=(256, 256, 1)),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Activation('relu'),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', kernel_constraint = tf.keras.constraints.MaxNorm(max_value = 4, axis = [0, 1, 2]), activation = 'relu'),
+        tf.keras.layers.SpatialDropout2D(rate = 0.25),
+        tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+        tf.keras.layers.BatchNormalization(),
+        # CONV BLOCK 2
+        tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", kernel_constraint = tf.keras.constraints.MaxNorm(max_value = 2, axis = [0, 1, 2])),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Activation('relu'),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation = 'relu', kernel_constraint = tf.keras.constraints.MaxNorm(max_value = 4, axis = [0, 1, 2])),
+        tf.keras.layers.SpatialDropout2D(rate = 0.25),
+        tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+        tf.keras.layers.BatchNormalization(),
+        # CONV BLOCK 3
+        tf.keras.layers.Conv2D(filters=64, kernel_size=(5, 5), strides=2, padding="same", kernel_constraint = tf.keras.constraints.MaxNorm(max_value = 2, axis = [0, 1, 2])),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Activation('relu'),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation = 'relu', kernel_constraint = tf.keras.constraints.MaxNorm(max_value = 4, axis = [0, 1, 2])),
+        tf.keras.layers.SpatialDropout2D(rate = 0.25),
+        tf.keras.layers.MaxPool2D(pool_size=2, strides=1, padding="same"),
+        tf.keras.layers.BatchNormalization(),
+        # CONV BLOCK 4
+        tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=1, padding="same", kernel_constraint = tf.keras.constraints.MaxNorm(max_value = 2, axis = [0, 1, 2])),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Activation('relu'),
+        tf.keras.layers.Conv2D(filters=64, kernel_size=(1, 1), strides=1, padding='same', activation = 'relu', kernel_constraint = tf.keras.constraints.MaxNorm(max_value = 4, axis = [0, 1, 2])),
+        tf.keras.layers.SpatialDropout2D(rate = 0.25),
+        tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding="same"),
+        tf.keras.layers.BatchNormalization(),
+        # FLATTEN
+        tf.keras.layers.Flatten(),
+        # DENSE LAYER 1
+        tf.keras.layers.Dense(units=256, activation='relu'),
+        tf.keras.layers.Dense(units=3, activation='softmax')
+    ])

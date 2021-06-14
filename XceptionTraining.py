@@ -86,11 +86,11 @@ custom_metrics = [
     my_custom_metric.macro_f1score,
     my_custom_metric.macro_precision,
     my_custom_metric.macro_recall,
-    my_custom_metric.macro_bacteria_precision,             # bacteria precision
+    my_custom_metric.bacteria_precision,             # bacteria precision
     my_custom_metric.macro_bacteria_recall,                # bacteria recall
-    my_custom_metric.macro_normal_precision,               # normal precision
+    my_custom_metric.normal_precision,               # normal precision
     my_custom_metric.macro_normal_recall,                  # normal recall
-    my_custom_metric.macro_virus_precision,                # virus precision
+    my_custom_metric.virus_precision,                # virus precision
     my_custom_metric.macro_virus_recall                    # virus recall
 ]
 
