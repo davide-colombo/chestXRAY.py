@@ -19,36 +19,29 @@ tf.random.set_seed(1234)
 
 major_class   = 'bacteria'
 minor_classes = ['normal', 'virus']
-my_data_utils = DatasetUtils(path_separator = '/', major_class = major_class, minor_class = minor_classes)
+my_data_utils = DatasetUtils(major_class = major_class, minor_class = minor_classes)
 
 root_dir_path = '/Users/davidecolombo/Desktop/dataset'
 dataset_dir   = '/chest_xray_final'
 
 all_files = my_data_utils.list_files_from_directory(root_dir_path + dataset_dir)
 
-# TODO: WRITE A CLASS FOR ALL THE CHECKS
-
-# len(all_files)              # 5855 because one was removed
-# len(set(all_files))         # no duplicate names
-
 ###################### EXTRACT CLASS NAMES ######################
 
-class_name = my_data_utils.get_classname_from_path(all_files)
-
-# len([name for name in class_name if name == 'virus'])
+class_name = my_data_utils.get_classname_from_path(all_files, path_separator = '/')
 
 ###################### GET CLASS FILE PATH ######################
 
-bacteria_files = [name for name in all_files if 'bacteria' in name]
-normal_files   = [name for name in all_files if 'normal' in name]
-virus_files    = [name for name in all_files if 'virus' in name]
+bacteria_files = my_data_utils.get_filepath_from_classname(all_files, 'bacteria')
+normal_files   = my_data_utils.get_filepath_from_classname(all_files, 'normal')
+virus_files    = my_data_utils.get_filepath_from_classname(all_files, 'virus')
 
-###################### IMPORT IMAGES BASED ON CLASS ######################
+###################### IMPORT CLASS IMAGES ######################
 
 my_img_utils = ImageUtils()
-bacteria_images = my_img_utils.per_class_import(bacteria_files, color_flag=ImageUtils.GRAYSCALE, s= 255)
-normal_images   = my_img_utils.per_class_import(normal_files, color_flag=ImageUtils.GRAYSCALE, s= 255)
-virus_images    = my_img_utils.per_class_import(virus_files, color_flag=ImageUtils.GRAYSCALE, s= 255)
+bacteria_images = my_img_utils.import_class_images(bacteria_files)
+normal_images   = my_img_utils.import_class_images(normal_files)
+virus_images    = my_img_utils.import_class_images(virus_files)
 
 ###################### COMPUTE MEAN AND VARIANCE FOR EACH IMAGE ######################
 
@@ -127,10 +120,10 @@ len([name for name in train_classes if name == 'bacteria'])
 ###################### READ ALL IMAGES ######################
 
 my_img_utils = ImageUtils()
-train_images = my_img_utils.import_images_from_pathlist(train_path, color_flag = ImageUtils.GRAYSCALE)
-train_images = my_img_utils.resize_array_of_images(train_images, d = (256, 256))
-train_images = my_img_utils.scale_array_of_images(train_images, scale_factor = 255)
-train_images = my_img_utils.reshape_array_of_images(train_images, (256, 256, 1))
+train_images = my_img_utils.__import_images(train_path, color_flag = ImageUtils.GRAYSCALE)
+train_images = my_img_utils.__resize_images(train_images, d = (256, 256))
+train_images = my_img_utils.__scale_images(train_images, scale_factor = 255)
+train_images = my_img_utils.__reshape_images(train_images, (256, 256, 1))
 
 ###################### SHUFFLE TRAINING IMAGES ######################
 
@@ -140,21 +133,21 @@ train_classes_shuffle = [train_classes[i] for i in rnd]
 
 ###################### READ VALIDATION AND TEST IMAGES ######################
 
-validation_images = my_img_utils.import_images_from_pathlist(X_val, color_flag = ImageUtils.GRAYSCALE)
-validation_images = my_img_utils.resize_array_of_images(validation_images, d = (256, 256))
+validation_images = my_img_utils.__import_images(X_val, color_flag = ImageUtils.GRAYSCALE)
+validation_images = my_img_utils.__resize_images(validation_images, d = (256, 256))
 # validation_images = my_img_utils.scale_array_of_images(validation_images, scale_factor=255)
-validation_images = my_img_utils.reshape_array_of_images(validation_images, (256, 256, 1))
+validation_images = my_img_utils.__reshape_images(validation_images, (256, 256, 1))
 
-test_images = my_img_utils.import_images_from_pathlist(X_test, color_flag= ImageUtils.GRAYSCALE)
-test_images = my_img_utils.resize_array_of_images(test_images, d = (256, 256))
+test_images = my_img_utils.__import_images(X_test, color_flag= ImageUtils.GRAYSCALE)
+test_images = my_img_utils.__resize_images(test_images, d = (256, 256))
 # test_images = my_img_utils.scale_array_of_images(test_images, scale_factor=255)
-test_images = my_img_utils.reshape_array_of_images(test_images, (256, 256, 1))
+test_images = my_img_utils.__reshape_images(test_images, (256, 256, 1))
 
 ###################### RESHAPE IMAGE ARRAY ######################
 
-train_images       = my_img_utils.convert_list_to_nparray(train_images_shuffle)
-validation_images  = my_img_utils.convert_list_to_nparray(validation_images)
-test_images        = my_img_utils.convert_list_to_nparray(test_images)
+train_images       = my_img_utils.__list2nparray(train_images_shuffle)
+validation_images  = my_img_utils.__list2nparray(validation_images)
+test_images        = my_img_utils.__list2nparray(test_images)
 
 ###################### EXPORT OVERSAMPLED DATASET ######################
 
