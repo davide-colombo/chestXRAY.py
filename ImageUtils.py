@@ -8,12 +8,12 @@ class ImageUtils:
     GRAYSCALE = cv2.IMREAD_GRAYSCALE
     RGB       = cv2.IMREAD_COLOR
 
-    def import_class_images(self, filepath,
-                            color_flag = GRAYSCALE,
-                            scaling = True, scale_factor = 255,
-                            resizing = False, new_dim = (256, 256),
-                            reshaping = False, new_shape = (256, 256, 1),
-                            list2nparray = False):
+    def import_images(self, filepath,
+                      color_flag = GRAYSCALE,
+                      scaling = True, scale_factor = 255,
+                      resizing = False, new_dim = (256, 256),
+                      reshaping = False, new_shape = (256, 256, 1),
+                      list2nparray = False):
 
         images = self.__read_images(filepath, color_flag)
         CheckUtils.check_len(len(images), len(filepath))

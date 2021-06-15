@@ -2,8 +2,9 @@
 # @Date: 2021, 14th June
 
 # @Description: a class for coping with dataset
-from typing import List
+from typing import List, Iterable
 
+import numpy as np
 from sklearn.model_selection import train_test_split
 from CheckUtils import CheckUtils
 import pandas as pd
@@ -132,4 +133,18 @@ class DatasetUtils:
 # =============================================================================
     def shuffle_indices(self, indices):
         return random.sample(indices, len(indices))
+
+    def random_shuffle_elements(self, x: List[np.ndarray], y: List[str]):
+        rnd = self.shuffle_indices(list(range(0, len(x))))
+        CheckUtils.check_min(min(rnd), target_min=0)
+        CheckUtils.check_max(max(rnd), target_max=(len(x)-1))
+        x_shuffled = [x[i] for i in rnd]
+        y_shuffled = [y[i] for i in rnd]
+        CheckUtils.check_len(len(x), target_len = len(x_shuffled))
+        CheckUtils.check_x_shuffle_consistency(not_shuffled=x, shuffled = x_shuffled, mapping=rnd)
+        CheckUtils.check_len(len(y), target_len=len(y_shuffled))
+        CheckUtils.check_y_shuffle_consistency(not_shuffled=y, shuffled=y_shuffled, mapping=rnd)
+        return x_shuffled, y_shuffled
+
+
 

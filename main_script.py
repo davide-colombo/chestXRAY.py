@@ -31,9 +31,9 @@ virus_files    = my_data_utils.class2filepath(all_files, 'virus')
 ###################### IMPORT CLASS IMAGES ######################
 
 my_img_utils = ImageUtils()
-bacteria_images = my_img_utils.import_class_images(bacteria_files)
-normal_images   = my_img_utils.import_class_images(normal_files)
-virus_images    = my_img_utils.import_class_images(virus_files)
+bacteria_images = my_img_utils.import_images(bacteria_files)
+normal_images   = my_img_utils.import_images(normal_files)
+virus_images    = my_img_utils.import_images(virus_files)
 
 ###################### COMPUTE MEAN AND VARIANCE FOR EACH IMAGE ######################
 
@@ -77,22 +77,16 @@ train_files, train_classes, test_files, test_classes = my_data_utils.training_te
 
 ###################### CREATE A BALANCED VERSION OF THE TRAINING SET ######################
 
-# TRAINING SET
 train_files, train_classes = my_data_utils.random_oversampling(train_files)
 
 ###################### READ ALL IMAGES ######################
 
 my_img_utils = ImageUtils()
-train_images = my_img_utils.__import_images(train_files, color_flag = ImageUtils.GRAYSCALE)
-train_images = my_img_utils.__resize_images(train_images, d = (256, 256))
-train_images = my_img_utils.__scale_images(train_images, scale_factor = 255)
-train_images = my_img_utils.__reshape_images(train_images, (256, 256, 1))
+train_images = my_img_utils.import_images(filepath=train_files, scaling=True, resizing=True, reshaping=True)
 
 ###################### SHUFFLE TRAINING IMAGES ######################
 
-rnd = my_data_utils.shuffle_indices(list(range(0, len(train_images))))
-train_images_shuffle  = [train_images[i] for i in rnd]
-train_classes_shuffle = [train_classes[i] for i in rnd]
+train_images_shuffle, train_classes_shuffle = my_data_utils.random_shuffle_elements(x = train_images, y = train_classes)
 
 ###################### READ VALIDATION AND TEST IMAGES ######################
 

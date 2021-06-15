@@ -63,5 +63,30 @@ class CheckUtils:
             c = [cl for cl in classes if cl == c]
             CheckUtils.check_len(len(f), target_len = len(c))
 
+    @staticmethod
+    def check_min(current_min: float, target_min: float):
+        if current_min != target_min:
+            raise Exception('{} is the current min. {} is the target min'.format(current_min, target_min))
 
+    @staticmethod
+    def check_max(current_max: float, target_max: float):
+        if current_max != target_max:
+            raise Exception('{} is the current max. {} is the target max'.format(current_max, target_max))
 
+    @staticmethod
+    def check_x_shuffle_consistency(not_shuffled: List[np.ndarray], shuffled: List[np.ndarray], mapping: List[int]):
+        j = 0
+        for i in mapping:
+            if (shuffled[j] != not_shuffled[i]).any():
+                raise Exception('non-shuffled element at position {} is different to shuffled element'
+                                ' in position {}'.format(j, i))
+            j += 1
+
+    @staticmethod
+    def check_y_shuffle_consistency(not_shuffled: List[str], shuffled: List[str], mapping: List[int]):
+        j = 0
+        for i in mapping:
+            if shuffled[j] != not_shuffled[i]:
+                raise Exception('non-shuffled element at position {} is different to shuffled element'
+                                ' in position {}'.format(i, j))
+            j += 1
