@@ -1,7 +1,8 @@
 
-import cv2              # OpenCV for images
-import numpy as np      # array reshape
+import cv2
+import numpy as np
 from CheckUtils import CheckUtils
+from typing import List, Tuple
 
 class ImageUtils:
 
@@ -26,28 +27,29 @@ class ImageUtils:
             images = self.__reshape_images(images, new_shape)
             CheckUtils.check_shape(images, target_shape=new_shape)
         if list2nparray:
-            images = self.__list2nparray(images)
+            images = self.list2nparray(images)
         return images
 
-    def export_images(self, images, save_dir, save_prefix):
-        i = 0
-        for image in images:
-            filepath = save_dir + save_prefix + str(i) + '.jpeg'
-            cv2.imwrite(filepath, img=image)
-            i += 1
+    def export_images(self, images: np.ndarray,
+                      save_dir: str,
+                      save_prefix: str,
+                      save_format: str = '.jpeg') -> None:
+        for i, image in enumerate(images):
+            filepath = save_dir + save_prefix + str(i) + save_format
+            cv2.imwrite(filepath, img = image)
 
 # =============================================================================
-    def __read_images(self, file_path, color_flag):
-        return [cv2.imread(name, flags = color_flag) for name in file_path]
+    def __read_images(self, files: List[str], color_flag: int) -> List[np.ndarray]:
+        return [cv2.imread(name, flags = color_flag) for name in files]
 
-    def __resize_images(self, images, new_dim):
+    def __resize_images(self, images: List[np.ndarray], new_dim: Tuple[int, int]) -> List[np.ndarray]:
         return [cv2.resize(img, new_dim) for img in images]
 
-    def __scale_images(self, images, scale_factor):
+    def __scale_images(self, images: List[np.ndarray], scale_factor: int) -> List[np.ndarray]:
         return [np.divide(img, float(scale_factor)) for img in images]
 
-    def __reshape_images(self, images, new_shape):
+    def __reshape_images(self, images: List[np.ndarray], new_shape: Tuple[int, int, int]) -> List[np.ndarray]:
         return [np.reshape(img, new_shape) for img in images]
 
-    def __list2nparray(self, images):
+    def list2nparray(self, images: List[np.ndarray]) -> np.ndarray:
         return np.array(images)

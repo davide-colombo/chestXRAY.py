@@ -82,109 +82,102 @@ train_files, train_classes = my_data_utils.random_oversampling(train_files)
 ###################### READ ALL IMAGES ######################
 
 my_img_utils = ImageUtils()
-train_images = my_img_utils.import_images(filepath=train_files, scaling=True, resizing=True, reshaping=True)
+train_images = my_img_utils.import_images(filepath=train_files, scaling=False, reshaping=True)
 
 ###################### SHUFFLE TRAINING IMAGES ######################
 
 train_images_shuffle, train_classes_shuffle = my_data_utils.random_shuffle_elements(x = train_images, y = train_classes)
+train_images_shuffle = my_img_utils.list2nparray(train_images_shuffle)
 
 ###################### READ VALIDATION AND TEST IMAGES ######################
 
-validation_images = my_img_utils.__import_images(X_val, color_flag = ImageUtils.GRAYSCALE)
-validation_images = my_img_utils.__resize_images(validation_images, d = (256, 256))
-# validation_images = my_img_utils.scale_array_of_images(validation_images, scale_factor=255)
-validation_images = my_img_utils.__reshape_images(validation_images, (256, 256, 1))
-
-test_images = my_img_utils.__import_images(X_test, color_flag= ImageUtils.GRAYSCALE)
-test_images = my_img_utils.__resize_images(test_images, d = (256, 256))
-# test_images = my_img_utils.scale_array_of_images(test_images, scale_factor=255)
-test_images = my_img_utils.__reshape_images(test_images, (256, 256, 1))
-
-###################### RESHAPE IMAGE ARRAY ######################
-
-train_images       = my_img_utils.__list2nparray(train_images_shuffle)
-validation_images  = my_img_utils.__list2nparray(validation_images)
-test_images        = my_img_utils.__list2nparray(test_images)
+val_images = my_img_utils.import_images(filepath = val_files, scaling=False, reshaping=True, list2nparray=True)
+test_images = my_img_utils.import_images(filepath = test_files, scaling=False, reshaping=True, list2nparray=True)
 
 ###################### EXPORT OVERSAMPLED DATASET ######################
 
-oversampling_dir = '/Users/davidecolombo/Desktop/dataset/chest_xray_oversampling/'
-train_dir = 'train/'
-test_dir  = 'test/'
-val_dir   = 'val/'
+# REMOVE COMMENT FOR EXPORTING IMAGES
 
-bacteria_dir = 'bacteria/'
-normal_dir   = 'normal/'
-virus_dir    = 'virus/'
+# oversampling_dir = '/Users/davidecolombo/Desktop/dataset/chest_xray_oversampling/'
+# train_dir = 'train/'
+# test_dir  = 'test/'
+# val_dir   = 'val/'
+#
+# bacteria_dir = 'bacteria/'
+# normal_dir   = 'normal/'
+# virus_dir    = 'virus/'
+#
+# bacteria_val_idx, normal_val_idx, virus_val_idx = \
+#     my_data_utils.get_multiclass_indices(y= val_classes)
+#
+# # EXPORT VALIDATION - VIRUS IMAGES
+# my_img_utils.export_images(save_prefix='virus_',
+#                            save_dir=oversampling_dir + val_dir + virus_dir,
+#                            images=val_images[virus_val_idx, :, :, :])
+#
+# # EXPORT VALIDATION - NORMAL IMAGES
+# my_img_utils.export_images(save_prefix='normal_',
+#                            save_dir=oversampling_dir + val_dir + normal_dir,
+#                            images=val_images[normal_val_idx, :, :, :])
+#
+# # EXPORT VALIDATION - BACTERIA IMAGES
+# my_img_utils.export_images(save_prefix='bacteria_',
+#                            save_dir=oversampling_dir + val_dir + bacteria_dir,
+#                            images=val_images[bacteria_val_idx, :, :, :])
+#
+# bacteria_test_idx, normal_test_idx, virus_test_idx = \
+#     my_data_utils.get_multiclass_indices(test_classes)
+#
+# # EXPORT TEST - VIRUS IMAGES
+# my_img_utils.export_images(save_prefix='virus_',
+#                            save_dir=oversampling_dir + test_dir + virus_dir,
+#                            images=test_images[virus_test_idx, :, :, :])
+#
+# # EXPORT TEST - NORMAL IMAGES
+# my_img_utils.export_images(save_prefix='normal_',
+#                            save_dir=oversampling_dir + test_dir + normal_dir,
+#                            images=test_images[normal_test_idx, :, :, :])
+#
+# # EXPORT TEST - BACTERIA IMAGES
+# my_img_utils.export_images(save_prefix='bacteria_',
+#                            save_dir=oversampling_dir + test_dir + bacteria_dir,
+#                            images=test_images[bacteria_test_idx, :, :, :])
+#
+# bacteria_train_idx, normal_train_idx, virus_train_idx = \
+#     my_data_utils.get_multiclass_indices(train_classes_shuffle)
+#
+# # EXPORT TRAIN - VIRUS IMAGES
+# my_img_utils.export_images(save_prefix='virus_',
+#                            save_dir=oversampling_dir + train_dir + virus_dir,
+#                            images=train_images[virus_train_idx, :, :, :])
+#
+# # EXPORT TRAIN - NORMAL IMAGES
+# my_img_utils.export_images(save_prefix='normal_',
+#                            save_dir=oversampling_dir + train_dir + normal_dir,
+#                            images=train_images[normal_train_idx, :, :, :])
+#
+# # EXPORT TRAIN - VIRUS IMAGES
+# my_img_utils.export_images(save_prefix='bacteria_',
+#                            save_dir=oversampling_dir + train_dir + bacteria_dir,
+#                            images=train_images[bacteria_train_idx, :, :, :])
 
-bacteria_val_idx, normal_val_idx, virus_val_idx = my_data_utils.get_multiclass_indices(y= y_val, class_list=['bacteria', 'normal', 'virus'])
+###################### RESCALE IMAGES ######################
 
-len(bacteria_val_idx)
-len(virus_val_idx)
-len(normal_val_idx)
-len(validation_images[virus_val_idx, :, :, :])
-
-# EXPORT VALIDATION - VIRUS IMAGES
-my_img_utils.export_images(save_prefix='virus_',
-                           save_dir=oversampling_dir + val_dir + virus_dir,
-                           images=validation_images[virus_val_idx, :, :, :])
-
-# EXPORT VALIDATION - BACTERIA IMAGES
-my_img_utils.export_images(save_prefix='bacteria_',
-                           save_dir=oversampling_dir + val_dir + bacteria_dir,
-                           images=validation_images[bacteria_val_idx, :, :, :])
-
-bacteria_test_idx, normal_test_idx, virus_test_idx = my_data_utils.get_multiclass_indices(y_test, class_list= ['bacteria', 'normal', 'virus'])
-len(bacteria_test_idx)
-len(normal_test_idx)
-len(virus_test_idx)
-
-# EXPORT TEST - VIRUS IMAGES
-my_img_utils.export_images(save_prefix='virus_',
-                           save_dir=oversampling_dir + test_dir + virus_dir,
-                           images=test_images[virus_test_idx, :, :, :])
-
-# EXPORT TEST - NORMAL IMAGES
-my_img_utils.export_images(save_prefix='normal_',
-                           save_dir=oversampling_dir + test_dir + normal_dir,
-                           images=test_images[normal_test_idx, :, :, :])
-
-# EXPORT TEST - BACTERIA IMAGES
-my_img_utils.export_images(save_prefix='bacteria_',
-                           save_dir=oversampling_dir + test_dir + bacteria_dir,
-                           images=test_images[bacteria_test_idx, :, :, :])
-
-bacteria_train_idx, normal_train_idx, virus_train_idx = my_data_utils.get_multiclass_indices(train_classes_shuffle, ['bacteria', 'normal', 'virus'])
-len(virus_train_idx)
-len(bacteria_train_idx)
-len(normal_train_idx)
-
-# EXPORT TRAIN - VIRUS IMAGES
-my_img_utils.export_images(save_prefix='virus_',
-                           save_dir=oversampling_dir + train_dir + virus_dir,
-                           images=train_images[virus_train_idx, :, :, :])
-
-# EXPORT TRAIN - NORMAL IMAGES
-my_img_utils.export_images(save_prefix='normal_',
-                           save_dir=oversampling_dir + train_dir + normal_dir,
-                           images=train_images[normal_train_idx, :, :, :])
-
-# EXPORT TRAIN - VIRUS IMAGES
-my_img_utils.export_images(save_prefix='bacteria_',
-                           save_dir=oversampling_dir + train_dir + bacteria_dir,
-                           images=train_images[bacteria_train_idx, :, :, :])
+train_images = train_images_shuffle / 255.0
+val_images   = val_images / 255.0
+test_images  = test_images / 255.0
 
 ###################### CONVERT CLASS LABELS INTO NUMERIC ######################
 
 train_classes = my_data_utils.label_to_num(train_classes_shuffle)
-validation_classes = my_data_utils.label_to_num(y_val)
-test_classes = my_data_utils.label_to_num(y_test)
+val_classes   = my_data_utils.label_to_num(val_classes)
+test_classes  = my_data_utils.label_to_num(test_classes)
 
 ###################### ONE-HOT ENCODE LABELS ######################
 
 train_one_hot = tf.keras.utils.to_categorical(train_classes, num_classes = 3)
-validation_one_hot = tf.keras.utils.to_categorical(validation_classes, num_classes = 3)
-test_one_hot = tf.keras.utils.to_categorical(test_classes, num_classes = 3)
+val_one_hot   = tf.keras.utils.to_categorical(val_classes,   num_classes = 3)
+test_one_hot  = tf.keras.utils.to_categorical(test_classes,  num_classes = 3)
 
 ###################### PLOT SOME IMAGES ######################
 
